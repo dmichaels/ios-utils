@@ -27,23 +27,6 @@ public struct Memory
         memset_pattern4(base, &rvalue, count * Memory.bufferBlockSize)
     }
 
-    // This version of the above with special cases for 1 and 2 (also tried with 3)
-    // is actually not any faster; slightly slower in fact (e.g. 3.01660 vs. 3.29970).
-    //
-    @inline(__always)
-    public static func slightly_slower_fastcopy(to base: UnsafeMutableRawPointer, count: Int, value: UInt32) {
-        var rvalue = value.bigEndian
-        switch count {
-        case 1:
-            base.storeBytes(of: rvalue, as: UInt32.self)
-        case 2:
-            base.storeBytes(of: rvalue, as: UInt32.self)
-            (base + Memory.bufferBlockSize).storeBytes(of: rvalue, as: UInt32.self)
-        default:
-            memset_pattern4(base, &rvalue, count * Memory.bufferBlockSize)
-        }
-    }
-
     // Copies (fast) the given (UInt32) value to the given (UInt8 array) buffer starting
     // at the given byte index, successively up to the given count times, into the buffer.
     // NOTE the units: The buffer is bytes; the index is in bytes; the count refers to the
@@ -83,6 +66,23 @@ public struct Memory
             return [UInt8](unsafeUninitializedCapacity: size) {  buffer, initializedCount in
                 initializedCount = size
             }
+        }
+    }
+
+    // This version of the above with special cases for 1 and 2 (also tried with 3)
+    // is actually not any faster; slightly slower in fact (e.g. 3.01660 vs. 3.29970).
+    //
+    @inline(__always)
+    public static func slightly_slower_fastcopy(to base: UnsafeMutableRawPointer, count: Int, value: UInt32) {
+        var rvalue = value.bigEndian
+        switch count {
+        case 1:
+            base.storeBytes(of: rvalue, as: UInt32.self)
+        case 2:
+            base.storeBytes(of: rvalue, as: UInt32.self)
+            (base + Memory.bufferBlockSize).storeBytes(of: rvalue, as: UInt32.self)
+        default:
+            memset_pattern4(base, &rvalue, count * Memory.bufferBlockSize)
         }
     }
 }
