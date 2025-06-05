@@ -60,9 +60,10 @@ private struct SmartGesture: ViewModifier
                         var swipped: Bool = false
                         if ((onSwipeLeft != nil) || (onSwipeRight != nil)) {
                             //
-                            // If swipeDurationThreshold (in milliseconds from the API POV in
-                            // onSmartGesture below) is greater than zero then we only recognize
-                            // a swipe if its total time is less than or equal to that value.
+                            // If swipeDurationThreshold (in milliseconds from the API POV in onSmartGesture
+                            // below) is greater than zero then we only recognize a swipe if its total time
+                            // is less than or equal to that value; currently default to 500; i.e. we will
+                            // only call onSwipe if the total swipe time is 500 milliseconds or less.
                             //
                             let swipeDuration: TimeInterval = (
                                 (self.swipeDurationThreshold > 0.0) && (self.dragStartTime != nil)
@@ -92,9 +93,6 @@ private struct SmartGesture: ViewModifier
                                     self.onSwipeRight?()
                                     swipped = true
                                 }
-                            }
-                            else {
-                                print("NOT SWIPING!")
                             }
                         }
                         if (!swipped) {
