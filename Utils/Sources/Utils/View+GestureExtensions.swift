@@ -20,6 +20,7 @@ private struct SmartGesture: ViewModifier
 
     internal let dragThreshold: CGFloat
     internal let swipeThreshold: CGFloat
+    internal let swipeDurationThreshold: TimeInterval
     internal let normalizePoint: ((CGPoint) -> CGPoint)?
     internal let orientation: OrientationObserver?
     internal let onDrag: (CGPoint) -> Void
@@ -33,6 +34,7 @@ private struct SmartGesture: ViewModifier
     internal let onSwipeRight: (() -> Void)?
 
     @State private var dragStart: CGPoint? = nil
+    @State private var dragStartTime: Date? = nil
     @State private var dragging: Bool = false
 
     internal func body(content: Content) -> some View {
@@ -43,7 +45,10 @@ private struct SmartGesture: ViewModifier
                         self.onDrag(normalizePoint?(value.location) ?? value.location)
                     }
                     else {
-                        if (dragStart == nil) { dragStart = value.location }
+                        if (dragStart == nil) {
+                            dragStartTime = Date()
+                            dragStart = value.location
+                        }
                         if (SmartGesture.dragDistance(start: dragStart!, current: value.location) > self.dragThreshold) {
                             dragging = true
                             self.onDrag(normalizePoint?(value.location) ?? value.location)
@@ -51,28 +56,56 @@ private struct SmartGesture: ViewModifier
                     }
                 }
                 .onEnded { value in
-                    if ((onSwipeLeft != nil) || (onSwipeRight != nil)) {
-                        let upsideDown: Bool = (
-                            (self.orientation != nil) &&
-                            (self.orientation!.current == .portraitUpsideDown)
-                        )
-                        let upsideDownButNotActuallySupported: Bool = (
-                            upsideDown &&
-                            !self.orientation!.supported.contains(.portraitUpsideDown)
-                        )
-                        if (!upsideDownButNotActuallySupported) {
-                            let swipeDistance: CGFloat = upsideDown ? value.translation.width : value.translation.width
-                            if (swipeDistance < -self.swipeThreshold) {
-                                self.onSwipeLeft?()
+                    if (dragging) {
+                        var swipped: Bool = false
+                        if ((onSwipeLeft != nil) || (onSwipeRight != nil)) {
+                            //
+                            // If swipeDurationThreshold (in milliseconds from the API POV in
+                            // onSmartGesture below) is greater than zero then we only recognize
+                            // a swipe if its total time is less than or equal to that value.
+                            //
+                            let swipeDuration: TimeInterval = (
+                                (self.swipeDurationThreshold > 0.0) && (self.dragStartTime != nil)
+                                ? Date().timeIntervalSince(self.dragStartTime!)
+                                : 0
+                            )
+                            //
+                            // Some weird nonsense with upside-down orientation; even when not supported.
+                            //
+                            let upsideDown: Bool = (
+                                (self.orientation != nil) &&
+                                (self.orientation!.current == .portraitUpsideDown)
+                            )
+                            let upsideDownButNotActuallySupported: Bool = (
+                                upsideDown &&
+                                !self.orientation!.supported.contains(.portraitUpsideDown)
+                            )
+                            if (!upsideDownButNotActuallySupported && (swipeDuration <= self.swipeDurationThreshold)) {
+                                let swipeDistance: CGFloat = (
+                                    upsideDown ? value.translation.width : value.translation.width
+                                )
+                                if (swipeDistance < -self.swipeThreshold) {
+                                    self.onSwipeLeft?()
+                                    swipped = true
+                                }
+                                else if (swipeDistance > self.swipeThreshold) {
+                                    self.onSwipeRight?()
+                                    swipped = true
+                                }
                             }
-                            else if (swipeDistance > self.swipeThreshold) {
-                                self.onSwipeRight?()
+                            else {
+                                print("NOT SWIPING!")
                             }
                         }
+                        if (!swipped) {
+                            self.onDragEnd(normalizePoint?(value.location) ?? value.location)
+                        }
                     }
-                    dragging ? self.onDragEnd(normalizePoint?(value.location) ?? value.location)
-                             : self.onTap(normalizePoint?(value.location) ?? value.location)
+                    else {
+                        self.onTap(normalizePoint?(value.location) ?? value.location)
+                    }
                     dragStart = nil
+                    dragStartTime = nil
                     dragging = false
                 }
         )
@@ -109,6 +142,7 @@ private struct SmartGesture: ViewModifier
 public extension View {
     func onSmartGesture(dragThreshold: Int = 10,
                         swipeThreshold: Int = 100,
+                        swipeDurationThreshold: Int = 500,
                         normalizePoint: ((CGPoint) -> CGPoint)? = nil,
                         orientation: OrientationObserver? = nil,
                         onDrag: @escaping (CGPoint) -> Void = { _ in },
@@ -123,6 +157,7 @@ public extension View {
     ) -> some View {
         self.modifier(SmartGesture(dragThreshold: CGFloat(dragThreshold),
                                    swipeThreshold: CGFloat(swipeThreshold),
+                                   swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
                                    normalizePoint: normalizePoint,
                                    orientation: orientation,
                                    onDrag: onDrag,
