@@ -35,6 +35,34 @@ public class OrientationObserver: ObservableObject
             }
     }
 
+    public func register(_ callback: @escaping Callback) {
+        self._callback = callback
+    }
+
+    public func deregister() {
+        Orientation.endNotifications()
+        self._cancellable?.cancel()
+    }
+
+    public final lazy var supported: [UIDeviceOrientation] = {
+        var result: [UIDeviceOrientation] = []
+        if let orientations = Bundle.main.object(forInfoDictionaryKey: "UISupportedInterfaceOrientations") as? [String] {
+            if (orientations.contains("UIInterfaceOrientationPortrait")) {
+                result.append(.portrait)
+            }
+            if (orientations.contains("UIInterfaceOrientationPortraitUpsideDown")) {
+                result.append(.portraitUpsideDown)
+            }
+            if (orientations.contains("UIInterfaceOrientationLandscapeLeft")) {
+                result.append(.landscapeLeft)
+            }
+            if (orientations.contains("UIInterfaceOrientationLandscapeRight")) {
+                result.append(.landscapeRight)
+            }
+        }
+        return result
+    }()
+
     public final func normalizePoint(screenPoint: CGPoint, view: CGRect) -> CGPoint
     {
         // Various oddities with upside-down mode and having to know the
@@ -69,33 +97,5 @@ public class OrientationObserver: ObservableObject
             y = screenPoint.y - view.origin.y
         }
         return CGPoint(x: x, y: y)
-    }
-
-    public final lazy var supported: [UIDeviceOrientation] = {
-        var result: [UIDeviceOrientation] = []
-        if let orientations = Bundle.main.object(forInfoDictionaryKey: "UISupportedInterfaceOrientations") as? [String] {
-            if (orientations.contains("UIInterfaceOrientationPortrait")) {
-                result.append(.portrait)
-            }
-            if (orientations.contains("UIInterfaceOrientationPortraitUpsideDown")) {
-                result.append(.portraitUpsideDown)
-            }
-            if (orientations.contains("UIInterfaceOrientationLandscapeLeft")) {
-                result.append(.landscapeLeft)
-            }
-            if (orientations.contains("UIInterfaceOrientationLandscapeRight")) {
-                result.append(.landscapeRight)
-            }
-        }
-        return result
-    }()
-
-    public func register(_ callback: @escaping Callback) {
-        self._callback = callback
-    }
-
-    public func deregister() {
-        Orientation.endNotifications()
-        self._cancellable?.cancel()
     }
 }
