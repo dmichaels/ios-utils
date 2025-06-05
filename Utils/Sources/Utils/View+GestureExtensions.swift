@@ -35,7 +35,7 @@ private struct SmartGesture: ViewModifier
     @State private var dragStart: CGPoint? = nil
     @State private var dragging: Bool = false
 
-    public func body(content: Content) -> some View {
+    internal func body(content: Content) -> some View {
         content.gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
