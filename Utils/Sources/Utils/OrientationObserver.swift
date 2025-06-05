@@ -35,11 +35,6 @@ public class OrientationObserver: ObservableObject
             }
     }
 
-    public var callback: Callback? {
-        get { self._callback }
-        set { self._callback = newValue }
-    }
-
     public final func normalizePoint(screenPoint: CGPoint, view: CGRect) -> CGPoint
     {
         // Various oddities with upside-down mode and having to know the
@@ -94,6 +89,10 @@ public class OrientationObserver: ObservableObject
         }
         return result
     }()
+
+    public func register(_ callback: @escaping Callback) {
+        self._callback = callback
+    }
 
     public func deregister() {
         Orientation.endNotifications()
