@@ -173,7 +173,8 @@ public extension View {
                         onSwipeLeft: (() -> Void)? = nil,
                         onSwipeRight: (() -> Void)? = nil,
     ) -> some View {
-        self.modifier(SmartGesture(dragThreshold: CGFloat(dragThreshold),
+        self.modifier(SmartGesture(
+                        dragThreshold: CGFloat(dragThreshold),
                         swipeThreshold: CGFloat(swipeThreshold),
                         swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
                         normalizePoint: normalizePoint,
