@@ -21,6 +21,7 @@ private struct SmartGesture: ViewModifier
     internal let dragThreshold: CGFloat
     internal let swipeThreshold: CGFloat
     internal let swipeDurationThreshold: TimeInterval
+    internal let longTapThreshold: CGFloat
     internal let normalizePoint: ((CGPoint) -> CGPoint)?
     internal let orientation: OrientationObserver?
     internal let onDrag: (CGPoint) -> Void
@@ -33,32 +34,32 @@ private struct SmartGesture: ViewModifier
     internal let onSwipeLeft: (() -> Void)?
     internal let onSwipeRight: (() -> Void)?
 
-    @State private var dragStart: CGPoint? = nil
-    @State private var dragStartTime: Date? = nil
-    @State private var dragging: Bool = false
+    @State private var _dragStart: CGPoint? = nil
+    @State private var _dragStartTime: Date? = nil
+    @State private var _dragging: Bool = false
 
     internal func body(content: Content) -> some View {
         var result: AnyView = AnyView(content.gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    if (dragging) {
+                    if (self._dragging) {
                         self.onDrag(normalizePoint?(value.location) ?? value.location)
                     }
                     else {
-                        if (dragStart == nil) {
-                            dragStartTime = Date()
-                            dragStart = value.location
+                        if (self._dragStart == nil) {
+                            self._dragStartTime = Date()
+                            self._dragStart = value.location
                         }
-                        let dragDistance: CGFloat = hypot(value.location.x - dragStart!.x,
-                                                          value.location.y - dragStart!.y)
+                        let dragDistance: CGFloat = hypot(value.location.x - self._dragStart!.x,
+                                                          value.location.y - self._dragStart!.y)
                         if (dragDistance > self.dragThreshold) {
-                            dragging = true
+                            self._dragging = true
                             self.onDrag(normalizePoint?(value.location) ?? value.location)
                         }
                     }
                 }
                 .onEnded { value in
-                    if (dragging) {
+                    if (self._dragging) {
                         var swipped: Bool = false
                         if ((onSwipeLeft != nil) || (onSwipeRight != nil)) {
                             //
@@ -68,8 +69,8 @@ private struct SmartGesture: ViewModifier
                             // only call onSwipe if the total swipe time is 500 milliseconds or less.
                             //
                             let swipeDuration: TimeInterval = (
-                                (self.swipeDurationThreshold > 0.0) && (self.dragStartTime != nil)
-                                ? Date().timeIntervalSince(self.dragStartTime!)
+                                (self.swipeDurationThreshold > 0.0) && (self._dragStartTime != nil)
+                                ? Date().timeIntervalSince(self._dragStartTime!)
                                 : 0
                             )
                             //
@@ -104,9 +105,9 @@ private struct SmartGesture: ViewModifier
                     else {
                         self.onTap(normalizePoint?(value.location) ?? value.location)
                     }
-                    dragStart = nil
-                    dragStartTime = nil
-                    dragging = false
+                    self._dragStart = nil
+                    self._dragStartTime = nil
+                    self._dragging = false
                 }
         ))
         if let onDoubleTap = self.onDoubleTap {
@@ -122,7 +123,15 @@ private struct SmartGesture: ViewModifier
                         switch value {
                             case .second(true, let drag):
                                 if let location = drag?.location {
-                                    self.onLongTap?(normalizePoint?(location) ?? location)
+                                    //
+                                    // If the point where the long tap began is too far from
+                                    // where it ended then do not recognize it as a long tap.
+                                    //
+                                    if ((self._dragStart == nil) ||
+                                        (hypot(location.x - self._dragStart!.x,
+                                               location.y - self._dragStart!.y) <= longTapThreshold)) {
+                                        self.onLongTap?(normalizePoint?(location) ?? location)
+                                    }
                                 }
                             default:
                                 break
@@ -158,7 +167,8 @@ private struct SmartGesture: ViewModifier
 public extension View {
     func onSmartGesture(dragThreshold: Int = 10,
                         swipeThreshold: Int = 100,
-                        swipeDurationThreshold: Int = 500,
+                        swipeDurationThreshold: Int = 700,
+                        longTapThreshold: Int = 7,
                         normalizePoint: ((CGPoint) -> CGPoint)? = nil,
                         orientation: OrientationObserver? = nil,
                         onDrag: @escaping (CGPoint) -> Void = { _ in },
@@ -175,6 +185,7 @@ public extension View {
                         dragThreshold: CGFloat(dragThreshold),
                         swipeThreshold: CGFloat(swipeThreshold),
                         swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
+                        longTapThreshold: CGFloat(longTapThreshold),
                         normalizePoint: normalizePoint,
                         orientation: orientation,
                         onDrag: onDrag,
