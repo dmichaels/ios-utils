@@ -174,18 +174,18 @@ public extension View {
                         onSwipeRight: (() -> Void)? = nil,
     ) -> some View {
         self.modifier(SmartGesture(dragThreshold: CGFloat(dragThreshold),
-                                   swipeThreshold: CGFloat(swipeThreshold),
-                                   swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
-                                   normalizePoint: normalizePoint,
-                                   orientation: orientation,
-                                   onDrag: onDrag,
-                                   onDragEnd: onDragEnd,
-                                   onTap: onTap,
-                                   onDoubleTap: onDoubleTap,
-                                   onLongTap: onLongTap,
-                                   onZoom: onZoom,
-                                   onZoomEnd: onZoomEnd,
-                                   onSwipeLeft: onSwipeLeft,
-                                   onSwipeRight: onSwipeRight))
+                        swipeThreshold: CGFloat(swipeThreshold),
+                        swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
+                        normalizePoint: normalizePoint,
+                        orientation: orientation,
+                        onDrag: onDrag,
+                        onDragEnd: onDragEnd,
+                        onTap: onTap,
+                        onDoubleTap: onDoubleTap,
+                        onLongTap: onLongTap,
+                        onZoom: onZoom,
+                        onZoomEnd: onZoomEnd,
+                        onSwipeLeft: onSwipeLeft,
+                        onSwipeRight: onSwipeRight))
     }
 }
