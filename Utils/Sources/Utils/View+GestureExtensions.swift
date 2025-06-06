@@ -26,10 +26,10 @@ private struct SmartGesture: ViewModifier
     internal let onDrag: (CGPoint) -> Void
     internal let onDragEnd: (CGPoint) -> Void
     internal let onTap: (CGPoint) -> Void
-    internal let onDoubleTap: () -> Void
-    internal let onLongTap: (CGPoint) -> Void
-    internal let onZoom: (CGFloat) -> Void
-    internal let onZoomEnd: (CGFloat) -> Void
+    internal let onDoubleTap: (() -> Void)?
+    internal let onLongTap: ((CGPoint) -> Void)?
+    internal let onZoom: ((CGFloat) -> Void)?
+    internal let onZoomEnd: ((CGFloat) -> Void)?
     internal let onSwipeLeft: (() -> Void)?
     internal let onSwipeRight: (() -> Void)?
 
@@ -38,7 +38,7 @@ private struct SmartGesture: ViewModifier
     @State private var dragging: Bool = false
 
     internal func body(content: Content) -> some View {
-        content.gesture(
+        var result: AnyView = AnyView(content.gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
                     if (dragging) {
@@ -106,30 +106,50 @@ private struct SmartGesture: ViewModifier
                     dragStartTime = nil
                     dragging = false
                 }
-        )
-        .simultaneousGesture(
-            TapGesture(count: 2)
-                .onEnded(onDoubleTap)
-        )
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 1.0)
-                .sequenced(before: DragGesture(minimumDistance: 0))
-                .onEnded { value in
-                    switch value {
-                        case .second(true, let drag):
-                            if let location = drag?.location {
-                                self.onLongTap(normalizePoint?(location) ?? location)
-                            }
-                        default:
-                            break
+        ))
+        if let onDoubleTap = self.onDoubleTap {
+            result = AnyView(result.simultaneousGesture(
+                TapGesture(count: 2).onEnded(onDoubleTap)
+            ))
+        }
+        if let onLongTap = self.onLongTap {
+            result = AnyView(result.simultaneousGesture(
+                LongPressGesture(minimumDuration: 1.0)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .onEnded { value in
+                        switch value {
+                            case .second(true, let drag):
+                                if let location = drag?.location {
+                                    self.onLongTap?(normalizePoint?(location) ?? location)
+                                }
+                            default:
+                                break
+                        }
                     }
-                }
-        )
-        .simultaneousGesture(
-            MagnificationGesture()
-                .onChanged(onZoom)
-                .onEnded(onZoomEnd)
-        )
+            ))
+        }
+        if let onZoom = self.onZoom {
+            if let onZoomEnd = self.onZoomEnd {
+                result = AnyView(result.simultaneousGesture(
+                    MagnificationGesture()
+                        .onChanged(onZoom)
+                        .onEnded(onZoomEnd)
+                ))
+            }
+            else {
+                result = AnyView(result.simultaneousGesture(
+                    MagnificationGesture()
+                        .onChanged(onZoom)
+                ))
+            }
+        }
+        else if let onZoomEnd = self.onZoomEnd {
+            result = AnyView(result.simultaneousGesture(
+                MagnificationGesture()
+                    .onEnded(onZoomEnd)
+            ))
+        }
+        return result
     }
 
     private static func dragDistance(start: CGPoint, current: CGPoint) -> CGFloat {
@@ -146,10 +166,10 @@ public extension View {
                         onDrag: @escaping (CGPoint) -> Void = { _ in },
                         onDragEnd: @escaping (CGPoint) -> Void = { _ in },
                         onTap: @escaping (CGPoint) -> Void = { _ in },
-                        onDoubleTap: @escaping () -> Void = {},
-                        onLongTap: @escaping (CGPoint) -> Void = { _ in },
-                        onZoom: @escaping (CGFloat) -> Void = { _ in },
-                        onZoomEnd: @escaping (CGFloat) -> Void = { _ in },
+                        onDoubleTap: (() -> Void)? = nil,
+                        onLongTap: ((CGPoint) -> Void)? = nil,
+                        onZoom: ((CGFloat) -> Void)? = nil,
+                        onZoomEnd: ((CGFloat) -> Void)? = nil,
                         onSwipeLeft: (() -> Void)? = nil,
                         onSwipeRight: (() -> Void)? = nil,
     ) -> some View {
