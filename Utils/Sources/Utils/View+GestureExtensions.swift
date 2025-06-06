@@ -49,7 +49,9 @@ private struct SmartGesture: ViewModifier
                             dragStartTime = Date()
                             dragStart = value.location
                         }
-                        if (SmartGesture.dragDistance(start: dragStart!, current: value.location) > self.dragThreshold) {
+                        let dragDistance: CGFloat = hypot(value.location.x - dragStart!.x,
+                                                          value.location.y - dragStart!.y)
+                        if (dragDistance > self.dragThreshold) {
                             dragging = true
                             self.onDrag(normalizePoint?(value.location) ?? value.location)
                         }
@@ -150,10 +152,6 @@ private struct SmartGesture: ViewModifier
             ))
         }
         return result
-    }
-
-    private static func dragDistance(start: CGPoint, current: CGPoint) -> CGFloat {
-        return hypot(current.x - start.x, current.y - start.y)
     }
 }
 
