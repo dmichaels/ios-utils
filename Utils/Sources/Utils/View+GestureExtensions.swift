@@ -60,7 +60,7 @@ private struct SmartGesture: ViewModifier
                 }
                 .onEnded { value in
                     if (self._dragging) {
-                        var swipped: Bool = false
+                        var swipeLeft: Bool = false, swipeRight: Bool = false
                         if ((onSwipeLeft != nil) || (onSwipeRight != nil)) {
                             //
                             // If swipeDurationThreshold (in milliseconds from the API POV in onSmartGesture
@@ -89,17 +89,22 @@ private struct SmartGesture: ViewModifier
                                     upsideDown ? value.translation.width : value.translation.width
                                 )
                                 if (swipeDistance < -self.swipeThreshold) {
-                                    self.onSwipeLeft?()
-                                    swipped = true
+                                    swipeLeft = onSwipeLeft != nil
                                 }
                                 else if (swipeDistance > self.swipeThreshold) {
-                                    self.onSwipeRight?()
-                                    swipped = true
+                                    swipeRight = onSwipeRight != nil
                                 }
                             }
                         }
-                        if (!swipped) {
-                            self.onDragEnd(normalizePoint?(value.location) ?? value.location)
+                        //
+                        // Note that we need to call onDragEnd before onSwipe to avoid inconsistent state.
+                        //
+                        self.onDragEnd(normalizePoint?(value.location) ?? value.location)
+                        if (swipeLeft) {
+                            self.onSwipeLeft!()
+                        }
+                        else if (swipeRight) {
+                            self.onSwipeRight!()
                         }
                     }
                     else {
