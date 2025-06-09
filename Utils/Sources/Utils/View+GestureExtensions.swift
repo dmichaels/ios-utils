@@ -17,7 +17,6 @@ import SwiftUI
 //
 private struct SmartGesture: ViewModifier
 {
-
     internal let dragThreshold: CGFloat
     internal let swipeThreshold: CGFloat
     internal let swipeDurationThreshold: TimeInterval
