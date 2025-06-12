@@ -1,7 +1,8 @@
 import SwiftUI
 
-struct ColorCircleIcon: View {
-    var body: some View {
+public struct ColorCircleIcon: View {
+    public init() {}
+    public var body: some View {
         Circle()
             .fill(
                 AngularGradient(
