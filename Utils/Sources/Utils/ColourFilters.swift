@@ -26,7 +26,7 @@ public struct ColourFilters
     public static func ROO(value: UInt32) -> UInt32 { return value & R }
     public static func XGB(value: UInt32) -> UInt32 { return value | R }
     public static func XGX(value: UInt32) -> UInt32 { return value | (R | B) }
-    public static func XGo(value: UInt32) -> UInt32 { return (value | R) & (R | G) }
+    public static func XGO(value: UInt32) -> UInt32 { return (value | R) & (R | G) }
     public static func XXB(value: UInt32) -> UInt32 { return value | (R | G) }
     public static func XXX(value: UInt32) -> UInt32 { return value | (R | G | B) }
     public static func XXO(value: UInt32) -> UInt32 { return (value | (R | G)) & (R | G) }
