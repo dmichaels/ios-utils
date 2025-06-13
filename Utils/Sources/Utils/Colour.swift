@@ -144,13 +144,26 @@ public struct Colour: Equatable, Sendable
         Colour(Colour.darken(self.color, by: amount))
     }
 
+    public func lighten(by amount: CGFloat = 0.3) -> Colour {
+        Colour(Colour.lighten(self.color, by: amount))
+    }
+
     private static func darken(_ color: Color, by amount: CGFloat) -> Color {
         let uiColor = UIColor(color)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: max(brightness - amount, 0), opacity: alpha)
         }
-        return color // fallback
+        return color
+    }
+
+    private static func lighten(_ color: Color, by amount: CGFloat) -> Color {
+        let uiColor = UIColor(color)
+        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+        if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
+        }
+        return color
     }
 }
 
