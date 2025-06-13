@@ -105,21 +105,21 @@ public struct Colour: Equatable, Sendable
 
     // For convenience just replicate all known builtin UIColor colors.
 
-    public static let black: Colour = Colour(UIColor.black)
-    public static let blue: Colour = Colour(UIColor.blue)
-    public static let brown: Colour = Colour(UIColor.brown)
-    public static let clear: Colour = Colour(UIColor.clear)
-    public static let cyan: Colour = Colour(UIColor.cyan)
-    public static let darkGray: Colour = Colour(UIColor.darkGray)
-    public static let gray: Colour = Colour(UIColor.gray)
-    public static let green: Colour = Colour(UIColor.green)
+    public static let black:     Colour = Colour(UIColor.black)
+    public static let blue:      Colour = Colour(UIColor.blue)
+    public static let brown:     Colour = Colour(UIColor.brown)
+    public static let clear:     Colour = Colour(UIColor.clear)
+    public static let cyan:      Colour = Colour(UIColor.cyan)
+    public static let darkGray:  Colour = Colour(UIColor.darkGray)
+    public static let gray:      Colour = Colour(UIColor.gray)
+    public static let green:     Colour = Colour(UIColor.green)
     public static let lightGray: Colour = Colour(UIColor.lightGray)
-    public static let magenta: Colour = Colour(UIColor.magenta)
-    public static let orange: Colour = Colour(UIColor.orange)
-    public static let purple: Colour = Colour(UIColor.purple)
-    public static let red: Colour = Colour(UIColor.red)
-    public static let white: Colour = Colour(UIColor.white)
-    public static let yellow: Colour = Colour(UIColor.yellow)
+    public static let magenta:   Colour = Colour(UIColor.magenta)
+    public static let orange:    Colour = Colour(UIColor.orange)
+    public static let purple:    Colour = Colour(UIColor.purple)
+    public static let red:       Colour = Colour(UIColor.red)
+    public static let white:     Colour = Colour(UIColor.white)
+    public static let yellow:    Colour = Colour(UIColor.yellow)
 
     // For future use.
 
