@@ -1,7 +1,7 @@
-public struct ColourFilter
-{
-    public typealias Type = (UInt32) -> UInt32
+public typealias ColourFilter = (UInt32) -> UInt32
 
+public struct ColourFilters
+{
     public static func None(value: UInt32) -> UInt32 { return value }
 
     public static func Reds(value: UInt32) -> UInt32 { return ROO(value: value) }

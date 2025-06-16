@@ -123,7 +123,8 @@ public struct Colour: Equatable, Sendable
 
     // For future use.
 
-    public static func random(mode: ColourMode = ColourMode.color, filter: ((UInt32) -> UInt32)? = nil) -> Colour {
+    // public static func random(mode: ColourMode = ColourMode.color, filter: ((UInt32) -> UInt32)? = nil) -> Colour {
+    public static func random(mode: ColourMode = ColourMode.color, filter: ColourFilter? = nil) -> Colour {
         let color: Colour
         if (mode == ColourMode.monochrome) {
             let value: UInt8 = UInt8.random(in: 0...1) * 255
