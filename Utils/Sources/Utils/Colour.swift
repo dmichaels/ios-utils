@@ -123,11 +123,11 @@ public struct Colour: Equatable, Sendable
 
     // For future use.
 
-    public func tint(toward tint: Colour, by amount: CGFloat = 0.5) -> Colour {
+    public func tint(toward tint: Colour, by amount: CGFloat? = nil) -> Colour {
         return Colour(Colour.tint(from: self.color, toward: tint.color, by: amount))
     }
 
-    public func tint(toward tint: Color, by amount: CGFloat = 0.5) -> Colour {
+    public func tint(toward tint: Color, by amount: CGFloat? = nil) -> Colour {
         return Colour(Colour.tint(from: self.color, toward: tint, by: amount))
     }
 
@@ -139,9 +139,10 @@ public struct Colour: Equatable, Sendable
         Colour(Colour.darken(self.color, by: amount))
     }
 
-    public static func tint(from: Color, toward tint: Color, by amount: CGFloat = 0.5) -> Color {
+    public static func tint(from: Color, toward tint: Color, by amount: CGFloat? = nil) -> Color {
         let base: UIColor = UIColor(from)
         let tint: UIColor = UIColor(tint)
+        let amount: CGFloat = amount ?? 0.5
         var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
         var tr: CGFloat = 0, tg: CGFloat = 0, tb: CGFloat = 0, ta: CGFloat = 0
         guard base.getRed(&br, green: &bg, blue: &bb, alpha: &ba),
@@ -190,7 +191,7 @@ public struct Colour: Equatable, Sendable
                            UInt8((rgb >> Colour.BSHIFT) & 0xFF))
         }
         if (tint != nil) {
-            color = color.tint(toward: tint!, by: tintBy ?? 0.5)
+            color = color.tint(toward: tint!, by: tintBy)
         }
         if (filter != nil) {
             color = Colour(filter!(color.value))
