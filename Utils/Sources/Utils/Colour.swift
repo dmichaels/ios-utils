@@ -140,17 +140,20 @@ public struct Colour: Equatable, Sendable
     }
 
     public func transparency(_ alpha: CGFloat) -> Colour {
-        // return self.opacity(255 - UInt8(alpha * CGFloat(Colour.OPAQUE)))
         return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
     }
 
     public func transparency(_ alpha: Double) -> Colour {
-        // return self.opacity(255 - UInt8(alpha * CGFloat(Colour.OPAQUE)))
         return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
     }
 
     public func tint(toward tint: Colour, by amount: CGFloat? = nil) -> Colour {
-        return Colour(Colour.tint(from: self.color, toward: tint.color, by: amount))
+        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
+        let amountr: CGFloat = 1.0 - amount
+        let red:   UInt8 = UInt8(round(Double(self.red)   * amountr + Double(tint.red)   * amount))
+        let green: UInt8 = UInt8(round(Double(self.green) * amountr + Double(tint.green) * amount))
+        let blue:  UInt8 = UInt8(round(Double(self.blue)  * amountr + Double(tint.blue)  * amount))
+        return Colour(red, green, blue)
     }
 
     public func tint(toward tint: Color, by amount: CGFloat? = nil) -> Colour {
@@ -166,24 +169,23 @@ public struct Colour: Equatable, Sendable
     }
 
     public static func tint(from: Color, toward tint: Color, by amount: CGFloat? = nil) -> Color {
-        let base: UIColor = UIColor(from)
-        let tint: UIColor = UIColor(tint)
-        let amount: CGFloat = amount ?? 0.5
-        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
-        var tr: CGFloat = 0, tg: CGFloat = 0, tb: CGFloat = 0, ta: CGFloat = 0
-        guard base.getRed(&br, green: &bg, blue: &bb, alpha: &ba),
-              tint.getRed(&tr, green: &tg, blue: &tb, alpha: &ta) else {
+        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
+        let amountr: CGFloat = 1.0 - amount
+        var baseRed: CGFloat = 0, baseGreen: CGFloat = 0, baseBlue: CGFloat = 0, baseAlpha: CGFloat = 0
+        var tintRed: CGFloat = 0, tintGreen: CGFloat = 0, tintBlue: CGFloat = 0, tintAlpha: CGFloat = 0
+        guard UIColor(from).getRed(&baseRed, green: &baseGreen, blue: &baseBlue, alpha: &baseAlpha),
+              UIColor(tint).getRed(&tintRed, green: &tintGreen, blue: &tintBlue, alpha: &tintAlpha) else {
             return from
         }
-        return Color(red:     Double(br * (1 - amount) + tr * amount),
-                     green:   Double(bg * (1 - amount) + tg * amount),
-                     blue:    Double(bb * (1 - amount) + tb * amount),
-                     opacity: Double(ba * (1 - amount) + ta * amount))
+        return Color(red:     Double(baseRed   * amountr + tintRed   * amount),
+                     green:   Double(baseGreen * amountr + tintGreen * amount),
+                     blue:    Double(baseBlue  * amountr + tintBlue  * amount),
+                     opacity: Double(baseAlpha * amountr + tintAlpha * amount))
     }
 
     private static func lighten(_ color: Color, by amount: CGFloat? = nil) -> Color {
         let uicolor: UIColor = UIColor(color)
-        let amount: CGFloat = amount ?? 0.3
+        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.3
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
@@ -193,7 +195,7 @@ public struct Colour: Equatable, Sendable
 
     private static func darken(_ color: Color, by amount: CGFloat? = nil) -> Color {
         let uicolor: UIColor = UIColor(color)
-        let amount: CGFloat = amount ?? 0.3
+        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.3
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: max(brightness - amount, 0), opacity: alpha)
