@@ -131,11 +131,11 @@ public struct Colour: Equatable, Sendable
         return Colour(Colour.tint(from: self.color, toward: tint, by: amount))
     }
 
-    public func lighten(by amount: CGFloat = 0.3) -> Colour {
+    public func lighten(by amount: CGFloat? = nil) -> Colour {
         Colour(Colour.lighten(self.color, by: amount))
     }
 
-    public func darken(by amount: CGFloat = 0.3) -> Colour {
+    public func darken(by amount: CGFloat? = nil) -> Colour {
         Colour(Colour.darken(self.color, by: amount))
     }
 
@@ -155,8 +155,9 @@ public struct Colour: Equatable, Sendable
                      opacity: Double(ba * (1 - amount) + ta * amount))
     }
 
-    private static func lighten(_ color: Color, by amount: CGFloat) -> Color {
+    private static func lighten(_ color: Color, by amount: CGFloat? = nil) -> Color {
         let uicolor: UIColor = UIColor(color)
+        let amount: CGFloat = amount ?? 0.3
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
@@ -164,8 +165,9 @@ public struct Colour: Equatable, Sendable
         return color
     }
 
-    private static func darken(_ color: Color, by amount: CGFloat) -> Color {
+    private static func darken(_ color: Color, by amount: CGFloat? = nil) -> Color {
         let uicolor: UIColor = UIColor(color)
+        let amount: CGFloat = amount ?? 0.3
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
         if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: max(brightness - amount, 0), opacity: alpha)
