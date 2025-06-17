@@ -123,46 +123,77 @@ public struct Colour: Equatable, Sendable
 
     // For future use.
 
-    // public static func random(mode: ColourMode = ColourMode.color, filter: ((UInt32) -> UInt32)? = nil) -> Colour {
-    public static func random(mode: ColourMode = ColourMode.color, filter: ColourFilter? = nil) -> Colour {
-        let color: Colour
-        if (mode == ColourMode.monochrome) {
-            let value: UInt8 = UInt8.random(in: 0...1) * 255
-            color = Colour(value, value, value)
-        }
-        else if (mode == ColourMode.grayscale) {
-            let value = UInt8.random(in: 0...255)
-            color = Colour(value, value, value)
-        }
-        else {
-            let rgb = UInt32.random(in: 0...0xFFFFFF)
-            color = Colour(UInt8((rgb >> 16) & 0xFF), UInt8((rgb >> 8) & 0xFF), UInt8(rgb & 0xFF))
-        }
-        return (filter != nil) ? Colour(filter!(color.value)) : color
+    public func tint(toward tint: Colour, by amount: CGFloat = 0.5) -> Colour {
+        return Colour(Colour.tint(from: self.color, toward: tint.color, by: amount))
     }
 
-    public func darken(by amount: CGFloat = 0.3) -> Colour {
-        Colour(Colour.darken(self.color, by: amount))
+    public func tint(toward tint: Color, by amount: CGFloat = 0.5) -> Colour {
+        return Colour(Colour.tint(from: self.color, toward: tint, by: amount))
     }
 
     public func lighten(by amount: CGFloat = 0.3) -> Colour {
         Colour(Colour.lighten(self.color, by: amount))
     }
 
-    private static func darken(_ color: Color, by amount: CGFloat) -> Color {
-        let uiColor = UIColor(color)
+    public func darken(by amount: CGFloat = 0.3) -> Colour {
+        Colour(Colour.darken(self.color, by: amount))
+    }
+
+    public static func tint(from: Color, toward tint: Color, by amount: CGFloat = 0.5) -> Color {
+        let base: UIColor = UIColor(from)
+        let tint: UIColor = UIColor(tint)
+        var br: CGFloat = 0, bg: CGFloat = 0, bb: CGFloat = 0, ba: CGFloat = 0
+        var tr: CGFloat = 0, tg: CGFloat = 0, tb: CGFloat = 0, ta: CGFloat = 0
+        guard base.getRed(&br, green: &bg, blue: &bb, alpha: &ba),
+              tint.getRed(&tr, green: &tg, blue: &tb, alpha: &ta) else {
+            return from
+        }
+        return Color(red:     Double(br * (1 - amount) + tr * amount),
+                     green:   Double(bg * (1 - amount) + tg * amount),
+                     blue:    Double(bb * (1 - amount) + tb * amount),
+                     opacity: Double(ba * (1 - amount) + ta * amount))
+    }
+
+    private static func lighten(_ color: Color, by amount: CGFloat) -> Color {
+        let uicolor: UIColor = UIColor(color)
         var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
-        if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+        if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
+            return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
+        }
+        return color
+    }
+
+    private static func darken(_ color: Color, by amount: CGFloat) -> Color {
+        let uicolor: UIColor = UIColor(color)
+        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+        if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
             return Color(hue: hue, saturation: saturation, brightness: max(brightness - amount, 0), opacity: alpha)
         }
         return color
     }
 
-    private static func lighten(_ color: Color, by amount: CGFloat) -> Color {
-        let uiColor = UIColor(color)
-        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
-        if uiColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-            return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
+    public static func random(mode: ColourMode = ColourMode.color,
+                              tint: Colour? = nil, tintBy: CGFloat? = nil, filter: ColourFilter? = nil) -> Colour {
+        var color: Colour
+        if (mode == ColourMode.monochrome) {
+            let value: UInt8 = UInt8.random(in: 0...1) * 255
+            color = Colour(value, value, value)
+        }
+        else if (mode == ColourMode.grayscale) {
+            let value: UInt8 = UInt8.random(in: 0...255)
+            color = Colour(value, value, value)
+        }
+        else {
+            let rgb: UInt32 = UInt32.random(in: 0...0xFFFFFF)
+            color = Colour(UInt8((rgb >> Colour.RSHIFT) & 0xFF),
+                           UInt8((rgb >> Colour.GSHIFT) & 0xFF),
+                           UInt8((rgb >> Colour.BSHIFT) & 0xFF))
+        }
+        if (tint != nil) {
+            color = color.tint(toward: tint!, by: tintBy ?? 0.5)
+        }
+        if (filter != nil) {
+            color = Colour(filter!(color.value))
         }
         return color
     }
