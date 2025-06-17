@@ -123,6 +123,32 @@ public struct Colour: Equatable, Sendable
 
     // For future use.
 
+    public func opacity(_ alpha: UInt8) -> Colour {
+        return Colour(self.red, self.green, self.blue, alpha: alpha)
+    }
+
+    public func opacity(_ alpha: CGFloat) -> Colour {
+        return self.opacity(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    }
+
+    public func opacity(_ alpha: Double) -> Colour {
+        return self.opacity(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    }
+
+    public func transparency(_ alpha: UInt8) -> Colour {
+        return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
+    }
+
+    public func transparency(_ alpha: CGFloat) -> Colour {
+        // return self.opacity(255 - UInt8(alpha * CGFloat(Colour.OPAQUE)))
+        return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    }
+
+    public func transparency(_ alpha: Double) -> Colour {
+        // return self.opacity(255 - UInt8(alpha * CGFloat(Colour.OPAQUE)))
+        return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    }
+
     public func tint(toward tint: Colour, by amount: CGFloat? = nil) -> Colour {
         return Colour(Colour.tint(from: self.color, toward: tint.color, by: amount))
     }
