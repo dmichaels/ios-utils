@@ -99,6 +99,10 @@ public struct Colour: Equatable, Sendable
         Color(red: Double(self.red) / 255.0, green: Double(self.green) / 255.0, blue: Double(self.blue) / 255.0)
     }
 
+    public var uicolor: UIColor {
+        UIColor(self.color)
+    }
+
     public var hex: String {
         String(format: "%02X", self.value)
     }
@@ -127,12 +131,14 @@ public struct Colour: Equatable, Sendable
         return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
-    public func opacity(_ alpha: CGFloat) -> Colour {
-        return self.opacity(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    public func opacity(_ alpha: Int) -> Colour {
+        let alpha: UInt8 = UInt8(min(max(alpha, 0), 255))
+        return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
-    public func opacity(_ alpha: Double) -> Colour {
-        return self.opacity(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    public func opacity(_ alpha: CGFloat) -> Colour {
+        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * CGFloat(Colour.OPAQUE))
+        return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
     public func transparency(_ alpha: UInt8) -> Colour {
@@ -140,67 +146,49 @@ public struct Colour: Equatable, Sendable
     }
 
     public func transparency(_ alpha: CGFloat) -> Colour {
-        return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * CGFloat(Colour.OPAQUE))
+        return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
     }
 
-    public func transparency(_ alpha: Double) -> Colour {
-        return self.transparency(UInt8(alpha * CGFloat(Colour.OPAQUE)))
+    // Tints (this base) Colour toward the given Colour by the given amount which is assumed to, and is
+    // clamped to be, in the (inclusive) range of 0.0 thru 1.0. If the opacity argument is true (default)
+    // then the opacity is taken into account (of both the tint color and this base color); otherwise,
+    // if opacity is false, then it is not (the opacity simply remains what it was for this base color).
+    //
+    public func tint(toward tint: Colour, by amount: CGFloat? = nil, opacity: Bool = true) -> Colour {
+        let amount:  CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
+        let factor:  CGFloat = opacity ? amount * (Double(tint.alpha) / 255.0) : amount
+        let ifactor: CGFloat = 1.0 - factor
+        let red:     UInt8   = UInt8(round(Double(self.red)   * ifactor + Double(tint.red)   * factor))
+        let green:   UInt8   = UInt8(round(Double(self.green) * ifactor + Double(tint.green) * factor))
+        let blue:    UInt8   = UInt8(round(Double(self.blue)  * ifactor + Double(tint.blue)  * factor))
+        let opacity: UInt8   = opacity ? UInt8(round(Double(self.alpha) * ifactor + Double(tint.alpha) * factor)) : self.alpha
+        return Colour(red, green, blue, alpha: opacity)
     }
 
-    public func tint(toward tint: Colour, by amount: CGFloat? = nil) -> Colour {
-        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
-        let amountr: CGFloat = 1.0 - amount
-        let red:   UInt8 = UInt8(round(Double(self.red)   * amountr + Double(tint.red)   * amount))
-        let green: UInt8 = UInt8(round(Double(self.green) * amountr + Double(tint.green) * amount))
-        let blue:  UInt8 = UInt8(round(Double(self.blue)  * amountr + Double(tint.blue)  * amount))
-        return Colour(red, green, blue)
+    public func tint(toward tint: Color, by amount: CGFloat? = nil, opacity: Bool = true) -> Colour {
+        return Colour(tint).tint(toward: tint, by: amount, opacity: opacity)
     }
 
-    public func tint(toward tint: Color, by amount: CGFloat? = nil) -> Colour {
-        return Colour(Colour.tint(from: self.color, toward: tint, by: amount))
+    public func lighten(by amount: CGFloat) -> Colour {
+        let factor: CGFloat = min(max(amount, 0.0), 1.0)
+        let ifactor: CGFloat = 1.0 - factor
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        self.uicolor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        let bred:   CGFloat = (red   * ifactor) + factor
+        let bgreen: CGFloat = (green * ifactor) + factor
+        let bblue:  CGFloat = (blue  * ifactor) + factor
+        return Colour(Color(red: bred, green: bgreen, blue: bblue, opacity: alpha))
     }
 
-    public func lighten(by amount: CGFloat? = nil) -> Colour {
-        Colour(Colour.lighten(self.color, by: amount))
-    }
-
-    public func darken(by amount: CGFloat? = nil) -> Colour {
-        Colour(Colour.darken(self.color, by: amount))
-    }
-
-    public static func tint(from: Color, toward tint: Color, by amount: CGFloat? = nil) -> Color {
-        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
-        let amountr: CGFloat = 1.0 - amount
-        var baseRed: CGFloat = 0, baseGreen: CGFloat = 0, baseBlue: CGFloat = 0, baseAlpha: CGFloat = 0
-        var tintRed: CGFloat = 0, tintGreen: CGFloat = 0, tintBlue: CGFloat = 0, tintAlpha: CGFloat = 0
-        guard UIColor(from).getRed(&baseRed, green: &baseGreen, blue: &baseBlue, alpha: &baseAlpha),
-              UIColor(tint).getRed(&tintRed, green: &tintGreen, blue: &tintBlue, alpha: &tintAlpha) else {
-            return from
-        }
-        return Color(red:     Double(baseRed   * amountr + tintRed   * amount),
-                     green:   Double(baseGreen * amountr + tintGreen * amount),
-                     blue:    Double(baseBlue  * amountr + tintBlue  * amount),
-                     opacity: Double(baseAlpha * amountr + tintAlpha * amount))
-    }
-
-    private static func lighten(_ color: Color, by amount: CGFloat? = nil) -> Color {
-        let uicolor: UIColor = UIColor(color)
-        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.3
-        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
-        if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-            return Color(hue: hue, saturation: saturation, brightness: min(brightness + amount, 1.0), opacity: alpha)
-        }
-        return color
-    }
-
-    private static func darken(_ color: Color, by amount: CGFloat? = nil) -> Color {
-        let uicolor: UIColor = UIColor(color)
-        let amount: CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.3
-        var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
-        if uicolor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha) {
-            return Color(hue: hue, saturation: saturation, brightness: max(brightness - amount, 0), opacity: alpha)
-        }
-        return color
+    public func darken(by amount: CGFloat) -> Colour {
+        let ifactor = 1.0 - min(max(amount, 0.0), 1.0)
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        self.uicolor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        let dred:   CGFloat = red   * ifactor
+        let dgreen: CGFloat = green * ifactor
+        let dblue:  CGFloat = blue  * ifactor
+        return Colour(Color(red: dred, green: dgreen, blue: dblue, opacity: alpha))
     }
 
     public static func random(mode: ColourMode = ColourMode.color,
