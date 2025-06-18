@@ -1,7 +1,8 @@
 import SwiftUI
 
 public struct ColorCircleIcon: View {
-    public init() {}
+    private let _size: CGFloat
+    public init(size: CGFloat = 20.0) { self._size = size }
     public var body: some View {
         Circle()
             .fill(
@@ -10,6 +11,6 @@ public struct ColorCircleIcon: View {
                     center: .center
                 )
             )
-            .frame(width: 24, height: 24)
+            .frame(width: self._size, height: self._size)
     }
 }
