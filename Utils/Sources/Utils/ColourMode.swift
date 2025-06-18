@@ -1,5 +1,3 @@
-import Foundation
-
 public enum ColourMode: String, CaseIterable, Identifiable
 {
     case monochrome = "Monochrome"

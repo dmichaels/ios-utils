@@ -192,7 +192,8 @@ public struct Colour: Equatable, Sendable
     }
 
     public static func random(mode: ColourMode = ColourMode.color,
-                              tint: Colour? = nil, tintBy: CGFloat? = nil, filter: ColourFilter? = nil) -> Colour {
+                              tint: Colour? = nil, tintBy: CGFloat? = nil,
+                              filter: ColourFilter? = nil) -> Colour {
         var color: Colour
         if (mode == ColourMode.monochrome) {
             let value: UInt8 = UInt8.random(in: 0...1) * 255
