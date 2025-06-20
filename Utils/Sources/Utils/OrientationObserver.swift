@@ -63,6 +63,10 @@ public class OrientationObserver: ObservableObject
         return result
     }()
 
+    public var landscape: Bool {
+        self.current.isLandscape
+    }
+
     public final func normalizePoint(screenPoint: CGPoint, view: CGRect) -> CGPoint
     {
         // Various oddities with upside-down mode and having to know the
@@ -97,5 +101,33 @@ public class OrientationObserver: ObservableObject
             y = screenPoint.y - view.origin.y
         }
         return CGPoint(x: x, y: y)
+    }
+
+    public func rotationAngle() -> Angle {
+        switch self.current {
+        case .landscapeLeft:
+            return Angle.degrees(-90)
+        case .landscapeRight:
+            return Angle.degrees(90)
+        case .portraitUpsideDown:
+            //
+            // All sorts of odd trouble with upside-down mode;
+            // going there from portrait yields portrait mode;
+            // going there from landscape yield upside-down mode.
+            // But still acts weird sometimes (e.g. iPhone SE via
+            // Jake and iPad simulator); best to just disable
+            // upside-down mode in project deployment-info.
+            //
+            if (self.ipad) {
+                return Angle.degrees(180)
+            }
+            else if (self.previous.isLandscape) {
+                return Angle.degrees(90)
+            } else {
+                return Angle.degrees(0)
+            }
+        default:
+            return Angle.degrees(0)
+        }
     }
 }
