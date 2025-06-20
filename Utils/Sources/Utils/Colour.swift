@@ -66,10 +66,10 @@ public struct Colour: Equatable, Sendable
         var blue:  CGFloat = 0
         var alpha: CGFloat = 0
         if color.getRed(&red, green: &green, blue: &blue, alpha: &alpha) {
-            self._red   = UInt8(red   * 255)
-            self._green = UInt8(green * 255)
-            self._blue  = UInt8(blue  * 255)
-            self._alpha = UInt8(alpha * 255)
+            self._red   = UInt8(max(0, min(255, red   * 255)))
+            self._green = UInt8(max(0, min(255, green * 255)))
+            self._blue  = UInt8(max(0, min(255, blue  * 255)))
+            self._alpha = UInt8(max(0, min(255, alpha * 255)))
         }
         else {
             self._red   = 0
