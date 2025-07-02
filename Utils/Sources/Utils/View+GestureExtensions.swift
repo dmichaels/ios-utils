@@ -21,6 +21,7 @@ private struct SmartGesture: ViewModifier
     internal let swipeThreshold: CGFloat
     internal let swipeDurationThreshold: TimeInterval
     internal let longTapThreshold: CGFloat
+    internal let longTapPreemptTapThreshold: TimeInterval
     internal let normalizePoint: ((CGPoint) -> CGPoint)?
     internal let orientation: OrientationObserver?
     internal let onDrag: (CGPoint) -> Void
@@ -108,9 +109,13 @@ private struct SmartGesture: ViewModifier
                         }
                     }
                     else {
+                        //
+                        // Guard against onTap being called immediately after onLongTap; to effectively
+                        // disable this behavior pass longTapPreemptTapThreshold as 0 to onSmartGesture.
+                        //
                         let onLongTapTriggeredRecently: Bool = (
                             self._onLongTapTriggeredTime != nil
-                            ? Date().timeIntervalSince(self._onLongTapTriggeredTime!) < 0.2
+                            ? Date().timeIntervalSince(self._onLongTapTriggeredTime!) < self.longTapPreemptTapThreshold
                             : false
                         )
                         self._onLongTapTriggeredTime = nil
@@ -184,6 +189,7 @@ public extension View {
                         swipeThreshold: Int = 100, // milliseconds
                         swipeDurationThreshold: Int = 700, // milliseconds
                         longTapThreshold: Int = 7, // pixels/points
+                        longTapPreemptTapThreshold: Int = 50, // milliseconds
                         normalizePoint: ((CGPoint) -> CGPoint)? = nil,
                         orientation: OrientationObserver? = nil,
                         onDrag: @escaping (CGPoint) -> Void = { _ in },
@@ -201,6 +207,7 @@ public extension View {
                         swipeThreshold: CGFloat(swipeThreshold),
                         swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
                         longTapThreshold: CGFloat(longTapThreshold),
+                        longTapPreemptTapThreshold: TimeInterval(Double(longTapPreemptTapThreshold) / 1000.0),
                         normalizePoint: normalizePoint,
                         orientation: orientation,
                         onDrag: onDrag,
