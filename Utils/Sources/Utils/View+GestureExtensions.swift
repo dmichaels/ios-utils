@@ -148,7 +148,6 @@ private struct SmartGesture: ViewModifier
                                     if ((self._dragStart == nil) ||
                                         (hypot(location.x - self._dragStart!.x,
                                                location.y - self._dragStart!.y) <= longTapThreshold)) {
-                                        print("ON-LONG-TAP")
                                         self._onLongTapTriggeredTime = Date()
                                         self.onLongTap?(normalizePoint?(location) ?? location)
                                     }
