@@ -1,4 +1,4 @@
-public enum ColourMode: String, CaseIterable, Identifiable
+public enum ColourPalette: String, CaseIterable, Identifiable
 {
     case monochrome = "Monochrome"
     case grayscale  = "Grayscale"

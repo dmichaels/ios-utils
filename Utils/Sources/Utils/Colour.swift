@@ -191,15 +191,15 @@ public struct Colour: Equatable, Sendable
         return Colour(Color(red: dred, green: dgreen, blue: dblue, opacity: alpha))
     }
 
-    public static func random(mode: ColourMode = ColourMode.color,
+    public static func random(mode: ColourPalette = ColourPalette.color,
                               tint: Colour? = nil, tintBy: CGFloat? = nil,
                               filter: ColourFilter? = nil) -> Colour {
         var color: Colour
-        if (mode == ColourMode.monochrome) {
+        if (mode == ColourPalette.monochrome) {
             let value: UInt8 = UInt8.random(in: 0...1) * 255
             color = Colour(value, value, value)
         }
-        else if (mode == ColourMode.grayscale) {
+        else if (mode == ColourPalette.grayscale) {
             let value: UInt8 = UInt8.random(in: 0...255)
             color = Colour(value, value, value)
         }
