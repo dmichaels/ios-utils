@@ -158,6 +158,11 @@ private struct SmartGesture: ViewModifier
                     }
             ))
         }
+        //
+        // Note that SwiftUI does not seem to be able to guarantee the we will
+        // get onEnded event for a MagnificationGesture; so the implementor is
+        // advised not plan on doing anything particularly important there.
+        //
         if let onZoom = self.onZoom {
             if let onZoomEnd = self.onZoomEnd {
                 result = AnyView(result.simultaneousGesture(
