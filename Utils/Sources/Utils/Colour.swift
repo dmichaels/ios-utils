@@ -191,6 +191,19 @@ public struct Colour: Equatable, Sendable
         return Colour(Color(red: dred, green: dgreen, blue: dblue, opacity: alpha))
     }
 
+    public var isLight: Bool {
+        isDark
+    }
+
+    public var isDark: Bool {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+        guard self.uicolor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else {
+            return false
+        }
+        let brightness = 0.299 * red + 0.587 * green + 0.114 * blue
+        return brightness < 0.5
+    }
+
     public static func random(mode: ColourPalette = ColourPalette.color,
                               tint: Colour? = nil, tintBy: CGFloat? = nil,
                               filter: ColourFilter? = nil) -> Colour {
