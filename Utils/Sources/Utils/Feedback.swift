@@ -6,15 +6,15 @@ import AVFoundation
 @MainActor
 public struct Feedback
 {
-    private var _soundsEnabled: Bool = false
-    private var _hapticsEnabled: Bool = false
+    public var soundsEnabled: Bool = false
+    public var hapticsEnabled: Bool = false
 
-    init(sounds: Bool = false, haptics: Bool = false) {
-        self._soundsEnabled = sounds
-        self._hapticsEnabled = haptics
+    public init(sounds: Bool = false, haptics: Bool = false) {
+        self.soundsEnabled = sounds
+        self.hapticsEnabled = haptics
     }
     
-    func triggerTapSound() {
+    public func triggerTapSound() {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playback, mode: .default, options: .mixWithOthers)
@@ -25,17 +25,17 @@ public struct Feedback
         }
     }
     
-    func triggerHaptic() {
+    public func triggerHaptic() {
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.prepare()
         generator.impactOccurred()
     }
 
-    func trigger() {
-        if (self._soundsEnabled) {
+    public func trigger() {
+        if (self.soundsEnabled) {
             self.triggerTapSound()
         }
-        if (self._hapticsEnabled) {
+        if (self.hapticsEnabled) {
             self.triggerHaptic()
         }
     }
