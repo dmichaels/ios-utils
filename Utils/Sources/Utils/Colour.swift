@@ -192,7 +192,7 @@ public struct Colour: Equatable, Sendable
     }
 
     public var isLight: Bool {
-        isDark
+        !isDark
     }
 
     public var isDark: Bool {
