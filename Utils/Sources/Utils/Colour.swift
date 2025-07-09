@@ -141,6 +141,10 @@ public struct Colour: Equatable, Sendable
         return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
+    public func opacity(_ alpha: Float) -> Colour {
+        return self.opacity(CGFloat(alpha))
+    }
+
     public func transparency(_ alpha: UInt8) -> Colour {
         return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
     }
@@ -148,6 +152,10 @@ public struct Colour: Equatable, Sendable
     public func transparency(_ alpha: CGFloat) -> Colour {
         let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * CGFloat(Colour.OPAQUE))
         return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
+    }
+
+    public func transparency(_ alpha: Float) -> Colour {
+        return self.transparency(alpha)
     }
 
     // Tints (this base) Colour toward the given Colour by the given amount which is assumed to, and is
@@ -170,6 +178,10 @@ public struct Colour: Equatable, Sendable
         return Colour(tint).tint(toward: tint, by: amount, opacity: opacity)
     }
 
+    public func tint(toward tint: Colour, by amount: Float? = nil, opacity: Bool = true) -> Colour {
+        return self.tint(toward: tint, by: amount.map { CGFloat($0) }, opacity: opacity)
+    }
+
     public func lighten(by amount: CGFloat) -> Colour {
         let factor: CGFloat = min(max(amount, 0.0), 1.0)
         let ifactor: CGFloat = 1.0 - factor
@@ -181,6 +193,10 @@ public struct Colour: Equatable, Sendable
         return Colour(Color(red: bred, green: bgreen, blue: bblue, opacity: alpha))
     }
 
+    public func lighten(by amount: Float) -> Colour {
+        return self.lighten(by: CGFloat(amount))
+    }
+
     public func darken(by amount: CGFloat) -> Colour {
         let ifactor = 1.0 - min(max(amount, 0.0), 1.0)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
@@ -189,6 +205,10 @@ public struct Colour: Equatable, Sendable
         let dgreen: CGFloat = green * ifactor
         let dblue:  CGFloat = blue  * ifactor
         return Colour(Color(red: dred, green: dgreen, blue: dblue, opacity: alpha))
+    }
+
+    public func darken(by amount: Float) -> Colour {
+        return self.darken(by: CGFloat(amount))
     }
 
     public var isLight: Bool {
