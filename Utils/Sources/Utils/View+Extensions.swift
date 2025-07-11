@@ -13,3 +13,10 @@ extension View {
         }
     }
 }
+
+extension View {
+    @ViewBuilder
+    public func hide(_ hidden: Bool) -> some View {
+        if hidden { EmptyView() } else { self }
+    }
+}
