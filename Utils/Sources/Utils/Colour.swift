@@ -21,6 +21,8 @@ public struct Colour: Equatable, Sendable
     public static let OPAQUE:      UInt8 = 255
     public static let TRANSPARENT: UInt8 = 0
 
+    private static let OPAQUE_FLOAT: Float = Float(Colour.OPAQUE)
+
     // Private immutable individual RGBA color values.
 
     private let _red:   UInt8
@@ -136,26 +138,18 @@ public struct Colour: Equatable, Sendable
         return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
-    public func opacity(_ alpha: CGFloat) -> Colour {
-        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * CGFloat(Colour.OPAQUE))
-        return Colour(self.red, self.green, self.blue, alpha: alpha)
-    }
-
     public func opacity(_ alpha: Float) -> Colour {
-        return self.opacity(CGFloat(alpha))
+        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * Colour.OPAQUE_FLOAT)
+        return Colour(self.red, self.green, self.blue, alpha: alpha)
     }
 
     public func transparency(_ alpha: UInt8) -> Colour {
         return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
     }
 
-    public func transparency(_ alpha: CGFloat) -> Colour {
-        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * CGFloat(Colour.OPAQUE))
-        return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
-    }
-
     public func transparency(_ alpha: Float) -> Colour {
-        return self.transparency(alpha)
+        let alpha: UInt8 = UInt8(min(max(alpha, 0.0), 1.0) * Colour.OPAQUE_FLOAT)
+        return Colour(self.red, self.green, self.blue, alpha: 255 - alpha)
     }
 
     // Tints (this base) Colour toward the given Colour by the given amount which is assumed to, and is
@@ -163,26 +157,23 @@ public struct Colour: Equatable, Sendable
     // then the opacity is taken into account (of both the tint color and this base color); otherwise,
     // if opacity is false, then it is not (the opacity simply remains what it was for this base color).
     //
-    public func tint(toward tint: Colour, by amount: CGFloat? = nil, opacity: Bool = true) -> Colour {
-        let amount:  CGFloat = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
-        let factor:  CGFloat = opacity ? amount * (Double(tint.alpha) / 255.0) : amount
-        let ifactor: CGFloat = 1.0 - factor
-        let red:     UInt8   = UInt8(round(Double(self.red)   * ifactor + Double(tint.red)   * factor))
-        let green:   UInt8   = UInt8(round(Double(self.green) * ifactor + Double(tint.green) * factor))
-        let blue:    UInt8   = UInt8(round(Double(self.blue)  * ifactor + Double(tint.blue)  * factor))
-        let opacity: UInt8   = opacity ? UInt8(round(Double(self.alpha) * ifactor + Double(tint.alpha) * factor)) : self.alpha
+    public func tint(toward tint: Colour, by amount: Float? = nil, opacity: Bool = true) -> Colour {
+        let amount:  Float = amount != nil ? min(max(amount!, 0.0), 1.0) : 0.5
+        let factor:  Float = opacity ? amount * (Float(tint.alpha) / 255.0) : amount
+        let ifactor: Float = 1.0 - factor
+        let red:     UInt8   = UInt8(round(Float(self.red)   * ifactor + Float(tint.red)   * factor))
+        let green:   UInt8   = UInt8(round(Float(self.green) * ifactor + Float(tint.green) * factor))
+        let blue:    UInt8   = UInt8(round(Float(self.blue)  * ifactor + Float(tint.blue)  * factor))
+        let opacity: UInt8   = opacity ? UInt8(round(Float(self.alpha) * ifactor + Float(tint.alpha) * factor)) : self.alpha
         return Colour(red, green, blue, alpha: opacity)
     }
 
-    public func tint(toward tint: Color, by amount: CGFloat? = nil, opacity: Bool = true) -> Colour {
+    public func tint(toward tint: Color, by amount: Float? = nil, opacity: Bool = true) -> Colour {
         return Colour(tint).tint(toward: tint, by: amount, opacity: opacity)
     }
 
-    public func tint(toward tint: Colour, by amount: Float? = nil, opacity: Bool = true) -> Colour {
-        return self.tint(toward: tint, by: amount.map { CGFloat($0) }, opacity: opacity)
-    }
-
-    public func lighten(by amount: CGFloat) -> Colour {
+    public func lighten(by amount: Float) -> Colour {
+        let amount: CGFloat = CGFloat(amount)
         let factor: CGFloat = min(max(amount, 0.0), 1.0)
         let ifactor: CGFloat = 1.0 - factor
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
@@ -193,22 +184,15 @@ public struct Colour: Equatable, Sendable
         return Colour(Color(red: bred, green: bgreen, blue: bblue, opacity: alpha))
     }
 
-    public func lighten(by amount: Float) -> Colour {
-        return self.lighten(by: CGFloat(amount))
-    }
-
-    public func darken(by amount: CGFloat) -> Colour {
+    public func darken(by amount: Float) -> Colour {
+        let amount: CGFloat = CGFloat(amount)
         let ifactor = 1.0 - min(max(amount, 0.0), 1.0)
         var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
         self.uicolor.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        let dred:   CGFloat = red   * ifactor
-        let dgreen: CGFloat = green * ifactor
-        let dblue:  CGFloat = blue  * ifactor
-        return Colour(Color(red: dred, green: dgreen, blue: dblue, opacity: alpha))
-    }
-
-    public func darken(by amount: Float) -> Colour {
-        return self.darken(by: CGFloat(amount))
+        let fred:   CGFloat = red   * ifactor
+        let fgreen: CGFloat = green * ifactor
+        let fblue:  CGFloat = blue  * ifactor
+        return Colour(Color(red: fred, green: fgreen, blue: fblue, opacity: alpha))
     }
 
     public var isLight: Bool {
@@ -225,7 +209,9 @@ public struct Colour: Equatable, Sendable
     }
 
     public static func random(mode: ColourPalette = ColourPalette.color,
-                              tint: Colour? = nil, tintBy: CGFloat? = nil,
+                              tint: Colour? = nil, tintBy: Float = 0.5,
+                              lighten: Float? = nil,
+                              darken: Float? = nil,
                               filter: ColourFilter? = nil) -> Colour {
         var color: Colour
         if (mode == ColourPalette.monochrome) {
@@ -242,12 +228,10 @@ public struct Colour: Equatable, Sendable
                            UInt8((rgb >> Colour.GSHIFT) & 0xFF),
                            UInt8((rgb >> Colour.BSHIFT) & 0xFF))
         }
-        if (tint != nil) {
-            color = color.tint(toward: tint!, by: tintBy)
-        }
-        if (filter != nil) {
-            color = Colour(filter!(color.value))
-        }
+        if (tint != nil)    { color = color.tint(toward: tint!, by: tintBy) }
+        if (lighten != nil) { color = color.lighten(by: lighten!) }
+        if (darken != nil)  { color = color.darken(by: darken!) }
+        if (filter != nil)  { color = Colour(filter!(color.value)) }
         return color
     }
 }
