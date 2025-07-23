@@ -1,4 +1,4 @@
-import Testing
+import XCTest
 @testable import Utils
 
 @Test func example() async throws {
