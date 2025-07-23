@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Utils",
+    name: "ios-utils",
     platforms: [
         .iOS(.v14)
     ],
