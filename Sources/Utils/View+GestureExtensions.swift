@@ -55,7 +55,12 @@ private struct SmartGesture: ViewModifier
                                                           value.location.y - self._dragStart!.y)
                         if (dragDistance > self.dragThreshold) {
                             self._dragging = true
-                            self.onDrag(normalizePoint?(value.location) ?? value.location)
+                            //
+                            // Changed on 2025-07-27 to use self._dragStart rather than value.location
+                            // for the onDrag call here; hopefully non-breaking but noting just in case.
+                            // self.onDrag(normalizePoint?(value.location) ?? value.location)
+                            //
+                            self.onDrag(normalizePoint?(self._dragStart!) ?? self._dragStart!)
                         }
                     }
                 }
