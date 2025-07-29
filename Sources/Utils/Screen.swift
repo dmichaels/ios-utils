@@ -20,7 +20,7 @@ public final class Screen: @unchecked Sendable
 
     public var width: Int { _width }
     public var height: Int { _height }
-    public var size: CGSize { CGSize(width: CGFloat(self.width), height: CGFloat(self.height)) }
+    public var size: CGSize { CGSize(width: CGFloat(_width), height: CGFloat(_height)) }
     public var scale: CGFloat { _scale }
     //
     // The scale is the scaling factor for the screen, which is the nunmber physical pixels
