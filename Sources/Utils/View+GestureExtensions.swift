@@ -1,20 +1,62 @@
 import SwiftUI
 
-// Consolidated various gestures. Usage like thisa:
+// The onSmartGesture view modifier consolidates various gestures. Usage like something like this:
 //  
 //    .onSmartGesture(dragThreshold: self.dragThreshold,
 //                    normalizePoint: self.normalizePoint,
+//        onTap:       { value in self.onTap(value) },
+//        onLongTap:   { value in self.onLongTap(value) },
+//        onDoubleTap: { value in self.onDoubleTap(value) },
 //        onDrag:      { value in self.onDrag(value) },
 //        onDragEnd:   { value in self.onDragEnd(value) },
-//        onTap:       { value in self.onTap(value) },
-//        onDoubleTap: { self.onDoubleTap() },
-//        onLongTap:   { value in self.onLongTap(value) },
 //        onZoom:      { value in self.onZoom(value) },
 //        onZoomEnd:   { value in self.onZoomEnd(value) }
 //    )
 //
-// N.B. This was inspired by ChatGPT.
+// N.B. This was inspired by ChatGPT FYI FBOW FWIW.
 //
+public extension View {
+    func onSmartGesture(dragThreshold: Int = 4, // pixels/points
+                        swipeThreshold: Int = 100, // pixels/points
+                        swipeDurationThreshold: Int = 700, // milliseconds
+                        longTapThreshold: Int = 6, // pixels/points
+                        longTapPreemptTapThreshold: Int = 50, // milliseconds
+                        normalizePoint: ((CGPoint) -> CGPoint)? = nil,
+                        ignorePoint: ((CGPoint) -> Bool)? = nil,
+                        orientation: OrientationObserver? = nil,
+                        onTap: @escaping (CGPoint) -> Void = { _ in },
+                        onLongTap: ((CGPoint) -> Void)? = nil,
+                        onDoubleTap: ((CGPoint?) -> Void)? = nil,
+                        onDrag: @escaping (CGPoint) -> Void = { _ in },
+                        onDragEnd: @escaping (CGPoint) -> Void = { _ in },
+                        onDragStrict: Bool = false,
+                        onZoom: ((CGFloat) -> Void)? = nil,
+                        onZoomEnd: ((CGFloat) -> Void)? = nil,
+                        onSwipeLeft: (() -> Void)? = nil,
+                        onSwipeRight: (() -> Void)? = nil,
+    ) -> some View {
+        self.modifier(SmartGesture(
+                        dragThreshold: CGFloat(dragThreshold),
+                        swipeThreshold: CGFloat(swipeThreshold),
+                        swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
+                        longTapThreshold: CGFloat(longTapThreshold),
+                        longTapPreemptTapThreshold: TimeInterval(Double(longTapPreemptTapThreshold) / 1000.0),
+                        normalizePoint: normalizePoint,
+                        ignorePoint: ignorePoint,
+                        orientation: orientation,
+                        onTap: onTap,
+                        onLongTap: onLongTap,
+                        onDoubleTap: onDoubleTap,
+                        onDrag: onDrag,
+                        onDragEnd: onDragEnd,
+                        onDragStrict: onDragStrict,
+                        onZoom: onZoom,
+                        onZoomEnd: onZoomEnd,
+                        onSwipeLeft: onSwipeLeft,
+                        onSwipeRight: onSwipeRight))
+    }
+}
+
 private struct SmartGesture: ViewModifier
 {
     internal let dragThreshold: CGFloat
@@ -23,12 +65,14 @@ private struct SmartGesture: ViewModifier
     internal let longTapThreshold: CGFloat
     internal let longTapPreemptTapThreshold: TimeInterval
     internal let normalizePoint: ((CGPoint) -> CGPoint)?
+    internal let ignorePoint: ((CGPoint) -> Bool)?
     internal let orientation: OrientationObserver?
+    internal let onTap: (CGPoint) -> Void
+    internal let onLongTap: ((CGPoint) -> Void)?
+    internal let onDoubleTap: ((CGPoint?) -> Void)?
     internal let onDrag: (CGPoint) -> Void
     internal let onDragEnd: (CGPoint) -> Void
-    internal let onTap: (CGPoint) -> Void
-    internal let onDoubleTap: (() -> Void)?
-    internal let onLongTap: ((CGPoint) -> Void)?
+    internal let onDragStrict: Bool
     internal let onZoom: ((CGFloat) -> Void)?
     internal let onZoomEnd: ((CGFloat) -> Void)?
     internal let onSwipeLeft: (() -> Void)?
@@ -39,12 +83,38 @@ private struct SmartGesture: ViewModifier
     @State private var _dragging: Bool = false
     @State private var _onLongTapTriggeredTime: Date? = nil
 
+    private func _normalizePoint(_ point: CGPoint) -> CGPoint? {
+        //
+        // Introduced ignorePoint (2025-07-31); useful for example to limit gestures which are targeted
+        // for an Image inside a container (e.g. ZStack) but where the image is smaller; in such a case,
+        // for reasons as yet not completely understood, we can get gestures notification outside of the
+        // image (even though the onSmartGesture is placed on the Image); note that this acts on the
+        // normalized point, if normalizedPoint is indeed specified. And this ignorePoint is applicable
+        // only for onTap/onLongTap/onDoubleTap, or, if onDragStrict is true, then also onDrag.
+        //
+        let point: CGPoint = self.normalizePoint?(point) ?? point
+        return (self.ignorePoint?(point) ?? false) ? nil : point
+    }
+
     internal func body(content: Content) -> some View {
         var result: AnyView = AnyView(content.gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { value in
+                    if (self.onDragStrict) {
+                        //
+                        // Probably best not to check the validity of the location/point via ignorePoint once
+                        // dragging has started; but can onDragStrict can be set to true to get the more strict
+                        // behavior; though even in this case a drag could be started outside the desired bounds,
+                        // i.e. at a point where ignorePoint returns true, and onDrag would still be called if
+                        // the drag proceeds into the desired bounds, i.e where ignorePoint returns false.
+                        // Also note that _dragStart here has the non-normalized point.
+                        //
+                        guard let _ = self._normalizePoint(value.location) else {
+                            return
+                        }
+                    }
                     if (self._dragging) {
-                        self.onDrag(normalizePoint?(value.location) ?? value.location)
+                        self.onDrag(self.normalizePoint?(value.location) ?? value.location)
                     }
                     else {
                         if (self._dragStart == nil) {
@@ -60,7 +130,7 @@ private struct SmartGesture: ViewModifier
                             // for the onDrag call here; hopefully non-breaking but noting just in case.
                             // self.onDrag(normalizePoint?(value.location) ?? value.location)
                             //
-                            self.onDrag(normalizePoint?(self._dragStart!) ?? self._dragStart!)
+                            self.onDrag(self.normalizePoint?(self._dragStart!) ?? self._dragStart!)
                         }
                     }
                 }
@@ -105,7 +175,7 @@ private struct SmartGesture: ViewModifier
                         //
                         // Note that we need to call onDragEnd before onSwipe to avoid inconsistent state.
                         //
-                        self.onDragEnd(normalizePoint?(value.location) ?? value.location)
+                        self.onDragEnd(self.normalizePoint?(value.location) ?? value.location)
                         if (swipeLeft) {
                             self.onSwipeLeft!()
                         }
@@ -125,7 +195,9 @@ private struct SmartGesture: ViewModifier
                         )
                         self._onLongTapTriggeredTime = nil
                         if (!onLongTapTriggeredRecently) {
-                            self.onTap(normalizePoint?(value.location) ?? value.location)
+                            if let point: CGPoint = self._normalizePoint(value.location) {
+                                self.onTap(point)
+                            }
                         }
                     }
                     self._dragStart = nil
@@ -133,19 +205,14 @@ private struct SmartGesture: ViewModifier
                     self._dragging = false
                 }
         ))
-        if let onDoubleTap = self.onDoubleTap {
-            result = AnyView(result.simultaneousGesture(
-                TapGesture(count: 2).onEnded(onDoubleTap)
-            ))
-        }
-        if let onLongTap = self.onLongTap {
+        if let onLongTap: ((CGPoint) -> Void) = self.onLongTap {
             result = AnyView(result.simultaneousGesture(
                 LongPressGesture(minimumDuration: 1.0)
                     .sequenced(before: DragGesture(minimumDistance: 0))
                     .onEnded { value in
                         switch value {
                             case .second(true, let drag):
-                                if let location = drag?.location {
+                                if let location: CGPoint = drag?.location {
                                     //
                                     // If the point where the long tap began is too far from
                                     // where it ended then do not recognize it as a long tap.
@@ -154,7 +221,9 @@ private struct SmartGesture: ViewModifier
                                         (hypot(location.x - self._dragStart!.x,
                                                location.y - self._dragStart!.y) <= longTapThreshold)) {
                                         self._onLongTapTriggeredTime = Date()
-                                        self.onLongTap?(normalizePoint?(location) ?? location)
+                                        if let point: CGPoint = self._normalizePoint(location) {
+                                            onLongTap(point)
+                                        }
                                     }
                                 }
                             default:
@@ -163,13 +232,36 @@ private struct SmartGesture: ViewModifier
                     }
             ))
         }
+        if let onDoubleTap: ((CGPoint?) -> Void) = self.onDoubleTap {
+            if #available(iOS 17.0, *) {
+                result = AnyView(result.simultaneousGesture(
+                    //
+                    // New (2025-07-31) usage of SpatialTapGesture
+                    // to get the location/point of the double-tap.
+                    //
+                    SpatialTapGesture(count: 2)
+                        .onEnded { value in
+                            if let point: CGPoint = self._normalizePoint(value.location) {
+                                onDoubleTap(point)
+                            }
+                        }
+                ))
+            } else {
+                result = AnyView(result.simultaneousGesture(
+                    TapGesture(count: 2)
+                        .onEnded {
+                            onDoubleTap(nil)
+                        }
+                ))
+            }
+        }
         //
         // Note that SwiftUI does not seem to be able to guarantee the we will
         // get onEnded event for a MagnificationGesture; so the implementor is
         // advised not plan on doing anything particularly important there.
         //
-        if let onZoom = self.onZoom {
-            if let onZoomEnd = self.onZoomEnd {
+        if let onZoom: ((CGFloat) -> Void) = self.onZoom {
+            if let onZoomEnd: ((CGFloat) -> Void) = self.onZoomEnd {
                 result = AnyView(result.simultaneousGesture(
                     MagnificationGesture()
                         .onChanged(onZoom)
@@ -183,50 +275,12 @@ private struct SmartGesture: ViewModifier
                 ))
             }
         }
-        else if let onZoomEnd = self.onZoomEnd {
+        else if let onZoomEnd: ((CGFloat) -> Void) = self.onZoomEnd {
             result = AnyView(result.simultaneousGesture(
                 MagnificationGesture()
                     .onEnded(onZoomEnd)
             ))
         }
         return result
-    }
-}
-
-public extension View {
-    func onSmartGesture(dragThreshold: Int = 10, // milliseconds
-                        swipeThreshold: Int = 100, // milliseconds
-                        swipeDurationThreshold: Int = 700, // milliseconds
-                        longTapThreshold: Int = 7, // pixels/points
-                        longTapPreemptTapThreshold: Int = 50, // milliseconds
-                        normalizePoint: ((CGPoint) -> CGPoint)? = nil,
-                        orientation: OrientationObserver? = nil,
-                        onDrag: @escaping (CGPoint) -> Void = { _ in },
-                        onDragEnd: @escaping (CGPoint) -> Void = { _ in },
-                        onTap: @escaping (CGPoint) -> Void = { _ in },
-                        onDoubleTap: (() -> Void)? = nil,
-                        onLongTap: ((CGPoint) -> Void)? = nil,
-                        onZoom: ((CGFloat) -> Void)? = nil,
-                        onZoomEnd: ((CGFloat) -> Void)? = nil,
-                        onSwipeLeft: (() -> Void)? = nil,
-                        onSwipeRight: (() -> Void)? = nil,
-    ) -> some View {
-        self.modifier(SmartGesture(
-                        dragThreshold: CGFloat(dragThreshold),
-                        swipeThreshold: CGFloat(swipeThreshold),
-                        swipeDurationThreshold: TimeInterval(Double(swipeDurationThreshold) / 1000.0),
-                        longTapThreshold: CGFloat(longTapThreshold),
-                        longTapPreemptTapThreshold: TimeInterval(Double(longTapPreemptTapThreshold) / 1000.0),
-                        normalizePoint: normalizePoint,
-                        orientation: orientation,
-                        onDrag: onDrag,
-                        onDragEnd: onDragEnd,
-                        onTap: onTap,
-                        onDoubleTap: onDoubleTap,
-                        onLongTap: onLongTap,
-                        onZoom: onZoom,
-                        onZoomEnd: onZoomEnd,
-                        onSwipeLeft: onSwipeLeft,
-                        onSwipeRight: onSwipeRight))
     }
 }
