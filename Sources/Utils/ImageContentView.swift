@@ -11,11 +11,13 @@ public struct ImageContentView: View
         public var hideStatusBar: Bool  = false
         public var hideToolBar: Bool    = false
         public var ignoreSafeArea: Bool = false
+        public var background: Colour   = Colour.black
 
-        public init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false) {
+        public init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false, background: Colour? = nil) {
             self.hideStatusBar = hideStatusBar
             self.hideToolBar = hideToolBar
             self.ignoreSafeArea = ignoreSafeArea
+            self.background = background ?? Colour.black
         }
 
         public func updateImage()      { self.versionImage += 1 }
@@ -71,18 +73,19 @@ public struct ImageContentView: View
     @State          private var image: CGImage                   = DummyImage.instance
     @State          private var imageAngle: Angle                = Angle.zero
     @State          private var containerSize: CGSize            = CGSize.zero
-    @State          private var containerBackground: Color?      = Color.yellow
     @StateObject    private var orientation: OrientationObserver = OrientationObserver()
     @State          private var showSettingsView: Bool           = false
     @State          private var hideStatusBar: Bool
     @State          private var hideToolBar: Bool
     @State          private var ignoreSafeArea: Bool
+    @State          private var containerBackground: Color
 
     public init(config: Config, imageView: Viewable, settingsView: SettingsViewable, toolBarViews: ToolBarViewables) {
         self.config = config
         self.imageView = imageView
         self.settingsView = settingsView
         self.toolBarViews = toolBarViews
+        self.containerBackground = config.background.color
         self.hideStatusBar = config.hideStatusBar
         self.hideToolBar = config.hideToolBar
         self.ignoreSafeArea = config.ignoreSafeArea
@@ -91,7 +94,7 @@ public struct ImageContentView: View
     public var body: some View {
         NavigationStack {
             GeometryReader { containerGeometry in ZStack {
-                containerBackground ?? Color.green // Important trickery here
+                self.containerBackground // Important trickery here
                 Image(decorative: self.image, scale: 1.0)
                     .resizable().frame(width: CGFloat(image.width), height: CGFloat(image.height))
                     .position(x: containerGeometry.size.width / 2, y: containerGeometry.size.height / 2)
@@ -150,6 +153,7 @@ public struct ImageContentView: View
         self.hideStatusBar = self.config.hideStatusBar
         self.hideToolBar = self.config.hideToolBar
         self.ignoreSafeArea = self.config.ignoreSafeArea
+        self.containerBackground = self.config.background.color
     }
 }
 
