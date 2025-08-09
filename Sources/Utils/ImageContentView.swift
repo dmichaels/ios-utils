@@ -119,30 +119,7 @@ public struct ImageContentView: View
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
             .safeArea(ignore: self.ignoreSafeArea)
-/*
-            .toolbar {
-                //
-                // This was a bit tricky; toolbars are treated a little specially/specifically by SwiftUI.
-                //
-                if (!self.hideToolBar && !self.ignoreSafeArea && (toolBarViews.count > 0)) {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        toolBarViews[0]
-                    }
-                    if (toolBarViews.count > 2) {
-                        ToolbarItem(placement: .navigation) {
-                            ForEach(1..<(toolBarViews.count - 1), id: \.self) { i in
-                                toolBarViews[i]
-                            }
-                        }
-                    }
-                    if (toolBarViews.count > 1) {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            toolBarViews[toolBarViews.count - 1]
-                        }
-                    }
-                }
-            }
-*/
+            .toolBarView(hidden: self.hideToolBar || self.ignoreSafeArea, self.toolBarViews)
         }
         .statusBar(hidden: self.hideStatusBar)
         .onAppear    { self.orientation.register(self.updateOrientation) }
@@ -180,6 +157,28 @@ extension View {
     @ViewBuilder
     internal func safeArea(ignore: Bool) -> some View {
         if (ignore) { self.ignoresSafeArea() } else { self }
+    }
+    @ViewBuilder
+    internal func toolBarView(hidden: Bool = false, _ toolBarViews: ImageContentView.ToolBarViewables) -> some View {
+        self.toolbar {
+            if (!hidden) {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    toolBarViews[0]
+                }
+                if (toolBarViews.count > 2) {
+                    ToolbarItem(placement: .principal) {
+                        ForEach(1..<(toolBarViews.count - 1), id: \.self) { i in
+                            toolBarViews[i]
+                        }
+                    }
+                }
+                if (toolBarViews.count > 1) {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        toolBarViews.last!
+                    }
+                }
+            }
+        }
     }
 }
 
