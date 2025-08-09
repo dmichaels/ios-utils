@@ -119,6 +119,7 @@ public struct ImageContentView: View
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
             .safeArea(ignore: self.ignoreSafeArea)
+/*
             .toolbar {
                 //
                 // This was a bit tricky; toolbars are treated a little specially/specifically by SwiftUI.
@@ -141,6 +142,7 @@ public struct ImageContentView: View
                     }
                 }
             }
+*/
         }
         .statusBar(hidden: self.hideStatusBar)
         .onAppear    { self.orientation.register(self.updateOrientation) }
