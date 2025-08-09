@@ -12,7 +12,7 @@ public struct ImageContentView: View
         public var hideToolBar: Bool    = false
         public var ignoreSafeArea: Bool = false
 
-        init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false) {
+        public init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false) {
             self.hideStatusBar = hideStatusBar
             self.hideToolBar = hideToolBar
             self.ignoreSafeArea = ignoreSafeArea
