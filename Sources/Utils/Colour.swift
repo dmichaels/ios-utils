@@ -62,7 +62,7 @@ public struct Colour: Equatable, Sendable
         self.init(UIColor(color))
     }
 
-    private init(_ color: UIColor) {
+    public init(_ color: UIColor) {
         var red:   CGFloat = 0
         var green: CGFloat = 0
         var blue:  CGFloat = 0
@@ -79,6 +79,10 @@ public struct Colour: Equatable, Sendable
             self._blue  = 0
             self._alpha = Colour.OPAQUE
         }
+    }
+
+    public init(_ color: CGColor) {
+        self.init(UIColor(cgColor: color))
     }
 
     // Readonly immutable property access.
@@ -103,6 +107,10 @@ public struct Colour: Equatable, Sendable
 
     public var uicolor: UIColor {
         UIColor(self.color)
+    }
+
+    public var cgcolor: CGColor {
+        self.uicolor.cgColor
     }
 
     public var hex: String {
