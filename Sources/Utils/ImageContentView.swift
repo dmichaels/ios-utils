@@ -33,7 +33,6 @@ public struct ImageContentView: View
 
     public protocol Viewable
     {
-        init(_ config: ImageContentView.Config)
         var  image: CGImage { get }
         func update(viewSize: CGSize)
         func onTap(_ point: CGPoint)
