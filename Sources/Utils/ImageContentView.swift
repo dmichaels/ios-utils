@@ -27,8 +27,6 @@ public struct ImageContentView: View
         @Published internal private(set) var versionImage: Int = 0
         @Published internal private(set) var versionSettings: Int = 0
         @Published internal private(set) var versionSettingsView: Int = 0
-
-        internal static let Defaults: Config = Config()
     }
 
     public protocol Viewable
