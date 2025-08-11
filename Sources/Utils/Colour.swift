@@ -255,3 +255,16 @@ extension Color {
                          opacity: Double(color.alpha) / 255.0)
     }
 }
+
+extension Binding where Value == Colour {
+    //
+    // This is so we can use our Colour wrapper in a Color Picker, e.g.:
+    // ColorPicker("", selection: $settings.background.picker)
+    //
+    public var picker: Binding<Color> {
+        Binding<Color>(
+            get: { Color(self.wrappedValue) },
+            set: { self.wrappedValue = Colour($0) }
+        )
+    }
+}
