@@ -17,7 +17,7 @@ public struct IconLabel: View {
 
     public var body: some View {
         HStack(alignment: .center, spacing: 8) {
-            if (self._icon == "COLOR") {
+            if (self._icon.uppercased() == "COLOR") {
                 ColorCircleIcon().frame(width: self._iconWidth, alignment: .leading)
                     .padding(.leading, self._compact ? -4 : 0)
                     .foregroundColor(isEnabled ? .primary : .gray)
