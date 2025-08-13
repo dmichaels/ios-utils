@@ -116,8 +116,7 @@ public struct ImageContentView: View
                 .onAppear                                      { self.updateImage(geometry: containerGeometry) }
                 .onChange(of: containerGeometry.size)          { self.updateImage(geometry: containerGeometry) }
                 .onChange(of: self.config.versionSettings)     { self.updateSettings() }
-                .onChange(of: self.config.versionSettingsView) { self.imageView.onShowSettingsView()
-                                                                 self.showSettingsView = true }
+                .onChange(of: self.config.versionSettingsView) { self.imageView.onShowSettingsView() ; self.showSettingsView = true }
                 .onChange(of: self.config.versionImage)        { self.image = self.imageView.image }
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
