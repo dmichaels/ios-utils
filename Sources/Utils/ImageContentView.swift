@@ -33,6 +33,7 @@ public struct ImageContentView: View
     {
         var  image: CGImage { get }
         func update(viewSize: CGSize)
+        func updateSettings()
         func onTap(_ point: CGPoint)
         func onLongTap(_ point: CGPoint)
         func onDoubleTap(_ point: CGPoint?)
@@ -151,6 +152,7 @@ public struct ImageContentView: View
         self.hideToolBar = self.config.hideToolBar
         self.ignoreSafeArea = self.config.ignoreSafeArea
         self.background = self.config.background.color
+        self.imageView.updateSettings()
     }
 }
 
@@ -186,6 +188,7 @@ extension View {
 extension ImageContentView.Viewable {
     public var  image: CGImage { DummyImage.instance }
     public func update(viewSize: CGSize) {}
+    public func updateSettings() {}
     public func onTap(_ point: CGPoint) {}
     public func onLongTap(_ point: CGPoint) {}
     public func onDoubleTap(_ point: CGPoint?) {}
