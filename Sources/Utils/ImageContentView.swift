@@ -34,6 +34,7 @@ public struct ImageContentView: View
         var  image: CGImage { get }
         func update(viewSize: CGSize)
         func updateSettings()
+        func onShowSettingsView()
         func onTap(_ point: CGPoint)
         func onLongTap(_ point: CGPoint)
         func onDoubleTap(_ point: CGPoint?)
@@ -115,7 +116,8 @@ public struct ImageContentView: View
                 .onAppear                                      { self.updateImage(geometry: containerGeometry) }
                 .onChange(of: containerGeometry.size)          { self.updateImage(geometry: containerGeometry) }
                 .onChange(of: self.config.versionSettings)     { self.updateSettings() }
-                .onChange(of: self.config.versionSettingsView) { self.showSettingsView = true }
+                .onChange(of: self.config.versionSettingsView) { self.imageView.onShowSettingsView()
+                                                                 self.showSettingsView = true }
                 .onChange(of: self.config.versionImage)        { self.image = self.imageView.image }
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
@@ -189,6 +191,7 @@ extension ImageContentView.Viewable {
     public var  image: CGImage { DummyImage.instance }
     public func update(viewSize: CGSize) {}
     public func updateSettings() {}
+    public func onShowSettingsView() {}
     public func onTap(_ point: CGPoint) {}
     public func onLongTap(_ point: CGPoint) {}
     public func onDoubleTap(_ point: CGPoint?) {}
