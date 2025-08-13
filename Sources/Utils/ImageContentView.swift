@@ -6,7 +6,7 @@ import Utils
 //
 public struct ImageContentView: View
 {
-    public class Config: ObservableObject, @unchecked Sendable
+    public class Config: ObservableObject // , @unchecked Sendable
     {
         public var hideStatusBar: Bool  = false
         public var hideToolBar: Bool    = false
