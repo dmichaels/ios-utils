@@ -71,7 +71,7 @@ public struct ImageContentView: View
                     private var imageView: ImageContentView.Viewable
     @State          private var image: CGImage                   = DummyImage.instance
     @State          private var imageAngle: Angle                = Angle.zero
-    @State          private var viewSize: CGSize            = CGSize.zero
+    @State          private var viewSize: CGSize                 = CGSize.zero
     @StateObject    private var orientation: OrientationObserver = OrientationObserver()
     @State          private var showSettingsView: Bool           = false
     @State          private var hideStatusBar: Bool
