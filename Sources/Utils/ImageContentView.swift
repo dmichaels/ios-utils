@@ -33,8 +33,8 @@ public struct ImageContentView: View
     {
         var  image: CGImage { get }
         func update(viewSize: CGSize)
-        func applySettings()
         func setupSettings()
+        func applySettings()
         func onTap(_ point: CGPoint)
         func onLongTap(_ point: CGPoint)
         func onDoubleTap(_ point: CGPoint?)
@@ -189,8 +189,8 @@ extension View {
 extension ImageContentView.Viewable {
     public var  image: CGImage { DummyImage.instance }
     public func update(viewSize: CGSize) {}
-    public func applySettings() {}
     public func setupSettings() {}
+    public func applySettings() {}
     public func onTap(_ point: CGPoint) {}
     public func onLongTap(_ point: CGPoint) {}
     public func onDoubleTap(_ point: CGPoint?) {}
