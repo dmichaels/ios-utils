@@ -21,7 +21,7 @@ public struct ImageContentView: View
         }
 
         public func updateImage()      { self.versionImage += 1 }
-        public func updateSettings()   { self.versionSettings += 1 }
+        public func applySettings()    { self.versionSettings += 1 }
         public func showSettingsView() { self.versionSettingsView += 1 }
 
         @Published internal private(set) var versionImage: Int = 0
@@ -33,8 +33,8 @@ public struct ImageContentView: View
     {
         var  image: CGImage { get }
         func update(viewSize: CGSize)
-        func updateSettings()
-        func onShowSettingsView()
+        func applySettings()
+        func setupSettings()
         func onTap(_ point: CGPoint)
         func onLongTap(_ point: CGPoint)
         func onDoubleTap(_ point: CGPoint?)
@@ -115,8 +115,8 @@ public struct ImageContentView: View
                 )
                 .onAppear                                      { self.updateImage(geometry: containerGeometry) }
                 .onChange(of: containerGeometry.size)          { self.updateImage(geometry: containerGeometry) }
-                .onChange(of: self.config.versionSettings)     { self.updateSettings() }
-                .onChange(of: self.config.versionSettingsView) { self.imageView.onShowSettingsView() ; self.showSettingsView = true }
+                .onChange(of: self.config.versionSettings)     { self.applySettings() }
+                .onChange(of: self.config.versionSettingsView) { self.imageView.setupSettings() ; self.showSettingsView = true }
                 .onChange(of: self.config.versionImage)        { self.image = self.imageView.image }
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
@@ -148,12 +148,12 @@ public struct ImageContentView: View
             || (normalizedPoint.y < 0) || (normalizedPoint.y >= CGFloat(self.image.height))
     }
 
-    private func updateSettings() {
+    private func applySettings() {
         self.hideStatusBar = self.config.hideStatusBar
         self.hideToolBar = self.config.hideToolBar
         self.ignoreSafeArea = self.config.ignoreSafeArea
         self.background = self.config.background.color
-        self.imageView.updateSettings()
+        self.imageView.applySettings()
     }
 }
 
@@ -189,8 +189,8 @@ extension View {
 extension ImageContentView.Viewable {
     public var  image: CGImage { DummyImage.instance }
     public func update(viewSize: CGSize) {}
-    public func updateSettings() {}
-    public func onShowSettingsView() {}
+    public func applySettings() {}
+    public func setupSettings() {}
     public func onTap(_ point: CGPoint) {}
     public func onLongTap(_ point: CGPoint) {}
     public func onDoubleTap(_ point: CGPoint?) {}
