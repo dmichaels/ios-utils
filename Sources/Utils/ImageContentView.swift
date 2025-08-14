@@ -20,13 +20,13 @@ public struct ImageContentView: View
             self.background = background ?? Colour.black
         }
 
-        public func updateImage()      { self.versionImage += 1 }
-        public func applySettings()    { self.versionSettings += 1 }
-        public func showSettingsView() { self.versionSettingsView += 1 }
+        public func updateImage()      { self.watchImage += 1 }
+        public func applySettings()    { self.watchSettings += 1 }
+        public func showSettingsView() { self.watchSettingsView += 1 }
 
-        @Published internal private(set) var versionImage: Int = 0
-        @Published internal private(set) var versionSettings: Int = 0
-        @Published internal private(set) var versionSettingsView: Int = 0
+        @Published internal private(set) var watchImage: Int = 0
+        @Published internal private(set) var watchSettings: Int = 0
+        @Published internal private(set) var watchSettingsView: Int = 0
     }
 
     public protocol Viewable
@@ -71,7 +71,7 @@ public struct ImageContentView: View
                     private var imageView: ImageContentView.Viewable
     @State          private var image: CGImage                   = DummyImage.instance
     @State          private var imageAngle: Angle                = Angle.zero
-    @State          private var containerSize: CGSize            = CGSize.zero
+    @State          private var viewSize: CGSize            = CGSize.zero
     @StateObject    private var orientation: OrientationObserver = OrientationObserver()
     @State          private var showSettingsView: Bool           = false
     @State          private var hideStatusBar: Bool
@@ -92,11 +92,11 @@ public struct ImageContentView: View
 
     public var body: some View {
         NavigationStack {
-            GeometryReader { containerGeometry in ZStack {
+            GeometryReader { viewGeometry in ZStack {
                 self.background // Important trickery here
                 Image(decorative: self.image, scale: 1.0)
                     .resizable().frame(width: CGFloat(image.width), height: CGFloat(image.height))
-                    .position(x: containerGeometry.size.width / 2, y: containerGeometry.size.height / 2)
+                    .position(x: viewGeometry.size.width / 2, y: viewGeometry.size.height / 2)
                     .rotationEffect(self.imageAngle)
                 }
                 .onSmartGesture(
@@ -113,11 +113,11 @@ public struct ImageContentView: View
                     onSwipeLeft:    { self.imageView.onSwipeLeft() },
                     onSwipeRight:   { self.imageView.onSwipeRight() }
                 )
-                .onAppear                                      { self.updateImage(geometry: containerGeometry) }
-                .onChange(of: containerGeometry.size)          { self.updateImage(geometry: containerGeometry) }
-                .onChange(of: self.config.versionSettings)     { self.applySettings() }
-                .onChange(of: self.config.versionSettingsView) { self.imageView.setupSettings() ; self.showSettingsView = true }
-                .onChange(of: self.config.versionImage)        { self.image = self.imageView.image }
+                .onAppear                                    { self.updateImage(geometry: viewGeometry) }
+                .onChange(of: viewGeometry.size)             { self.updateImage(geometry: viewGeometry) }
+                .onChange(of: self.config.watchSettings)     { self.applySettings() }
+                .onChange(of: self.config.watchSettingsView) { self.imageView.setupSettings() ; self.showSettingsView = true }
+                .onChange(of: self.config.watchImage)        { self.image = self.imageView.image }
                 .navigationDestination(isPresented: $showSettingsView) { AnyView(self.settingsView) }
             }
             .safeArea(ignore: self.ignoreSafeArea)
@@ -129,8 +129,8 @@ public struct ImageContentView: View
     }
 
     private func updateImage(geometry: GeometryProxy) {
-        self.containerSize = geometry.size
-        self.imageView.update(viewSize: self.containerSize)
+        self.viewSize = geometry.size
+        self.imageView.update(viewSize: self.viewSize)
         self.image = self.imageView.image
     }
 
@@ -139,8 +139,8 @@ public struct ImageContentView: View
     }
 
     private func normalizePoint(_ point: CGPoint) -> CGPoint {
-        return CGPoint(x: point.x - ((self.containerSize.width  - CGFloat(self.image.width))  / 2),
-                       y: point.y - ((self.containerSize.height - CGFloat(self.image.height)) / 2))
+        return CGPoint(x: point.x - ((self.viewSize.width  - CGFloat(self.image.width))  / 2),
+                       y: point.y - ((self.viewSize.height - CGFloat(self.image.height)) / 2))
     }
 
     private func ignorePoint(_ normalizedPoint: CGPoint) -> Bool {
