@@ -6,7 +6,7 @@ import Utils
 //
 public struct ImageContentView: View
 {
-    public class Config: ObservableObject // , @unchecked Sendable
+    public class Config: ObservableObject, @unchecked Sendable
     {
         public var hideStatusBar: Bool  = false
         public var hideToolBar: Bool    = false
@@ -27,11 +27,15 @@ public struct ImageContentView: View
         @Published internal private(set) var watchImage: Int = 0
         @Published internal private(set) var watchSettings: Int = 0
         @Published internal private(set) var watchSettingsView: Int = 0
+
+        public static let Defaults: Config = Config()
     }
 
     public protocol Viewable
     {
         var  image: CGImage { get }
+        var  size: CGSize { get }
+        var  scale: CGFloat { get }
         func update(viewSize: CGSize)
         func setupSettings()
         func applySettings()
@@ -69,7 +73,7 @@ public struct ImageContentView: View
                     private var settingsView: any SettingsViewable
                     private var toolBarViews: ToolBarViewables
                     private var imageView: ImageContentView.Viewable
-    @State          private var image: CGImage                   = DummyImage.instance
+    @State          private var image: CGImage                   = DefaultImage.instance
     @State          private var imageAngle: Angle                = Angle.zero
     @State          private var viewSize: CGSize                 = CGSize.zero
     @StateObject    private var orientation: OrientationObserver = OrientationObserver()
@@ -94,8 +98,8 @@ public struct ImageContentView: View
         NavigationStack {
             GeometryReader { viewGeometry in ZStack {
                 self.background // Important trickery here
-                Image(decorative: self.image, scale: 1.0)
-                    .resizable().frame(width: CGFloat(image.width), height: CGFloat(image.height))
+                Image(decorative: self.image, scale: self.imageView.scale)
+                    .resizable().frame(width: self.imageView.size.width, height: self.imageView.size.height)
                     .position(x: viewGeometry.size.width / 2, y: viewGeometry.size.height / 2)
                     .rotationEffect(self.imageAngle)
                 }
@@ -187,8 +191,6 @@ extension View {
 }
 
 extension ImageContentView.Viewable {
-    public var  image: CGImage { DummyImage.instance }
-    public func update(viewSize: CGSize) {}
     public func setupSettings() {}
     public func applySettings() {}
     public func onTap(_ point: CGPoint) {}
