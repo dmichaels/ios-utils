@@ -143,13 +143,13 @@ public struct ImageContentView: View
     }
 
     private func normalizePoint(_ point: CGPoint) -> CGPoint {
-        return CGPoint(x: point.x - ((self.viewSize.width  - CGFloat(self.image.width))  / 2),
-                       y: point.y - ((self.viewSize.height - CGFloat(self.image.height)) / 2))
+        return CGPoint(x: point.x - ((self.viewSize.width  - self.imageView.size.width)  / 2),
+                       y: point.y - ((self.viewSize.height - self.imageView.size.height) / 2))
     }
 
     private func ignorePoint(_ normalizedPoint: CGPoint) -> Bool {
-        return (normalizedPoint.x < 0) || (normalizedPoint.x >= CGFloat(self.image.width))
-            || (normalizedPoint.y < 0) || (normalizedPoint.y >= CGFloat(self.image.height))
+        return (normalizedPoint.x < 0) || (normalizedPoint.x >= self.imageView.size.width)
+            || (normalizedPoint.y < 0) || (normalizedPoint.y >= self.imageView.size.height)
     }
 
     private func applySettings() {
