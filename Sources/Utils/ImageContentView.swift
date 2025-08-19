@@ -12,6 +12,7 @@ public struct ImageContentView: View
         public var hideToolBar: Bool    = false
         public var ignoreSafeArea: Bool = false
         public var background: Colour   = Colour.black
+        public var imageView: Viewable? = nil
 
         public init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false, background: Colour? = nil) {
             self.hideStatusBar = hideStatusBar
@@ -84,6 +85,7 @@ public struct ImageContentView: View
     @State          private var background: Color
 
     public init(config: Config, imageView: Viewable, settingsView: SettingsViewable, toolBarViews: ToolBarViewables) {
+        config.imageView = imageView
         self.config = config
         self.imageView = imageView
         self.settingsView = settingsView
