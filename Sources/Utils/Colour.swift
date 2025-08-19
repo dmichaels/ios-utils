@@ -177,7 +177,7 @@ public struct Colour: Equatable, Sendable
     }
 
     public func tint(toward tint: Color, by amount: Float? = nil, opacity: Bool = true) -> Colour {
-        return Colour(tint).tint(toward: tint, by: amount, opacity: opacity)
+        return Colour(tint).tint(toward: Colour(tint), by: amount, opacity: opacity)
     }
 
     public func lighten(by amount: Float) -> Colour {

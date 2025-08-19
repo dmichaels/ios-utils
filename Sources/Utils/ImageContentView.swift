@@ -1,5 +1,4 @@
 import SwiftUI
-import Utils
 
 // Example (with help from ChatGPT) relevant to simplifying ios-lifegame setup 2027-07-31 ...
 // Went through lots of iterations; this is the simplest we came up with; lots of subtleties.
@@ -12,9 +11,10 @@ public struct ImageContentView: View
         public var hideToolBar: Bool    = false
         public var ignoreSafeArea: Bool = false
         public var background: Colour   = Colour.black
-        public var imageView: Viewable? = nil
+        public var imageView: ImageViewable? = nil
 
-        public init(hideStatusBar: Bool = false, hideToolBar: Bool = false, ignoreSafeArea: Bool = false, background: Colour? = nil) {
+        public init(hideStatusBar: Bool = false, hideToolBar: Bool = false,
+                    ignoreSafeArea: Bool = false, background: Colour? = nil) {
             self.hideStatusBar = hideStatusBar
             self.hideToolBar = hideToolBar
             self.ignoreSafeArea = ignoreSafeArea
@@ -32,7 +32,7 @@ public struct ImageContentView: View
         public static let Defaults: Config = Config()
     }
 
-    public protocol Viewable
+    public protocol ImageViewable
     {
         var  image: CGImage { get }
         var  size: CGSize { get }
@@ -74,7 +74,7 @@ public struct ImageContentView: View
     @ObservedObject private var config: ImageContentView.Config
                     private var settingsView: any SettingsViewable
                     private var toolBarViews: ToolBarViewables
-                    private var imageView: ImageContentView.Viewable
+                    private var imageView: ImageContentView.ImageViewable
     @State          private var image: CGImage                   = DefaultImage.instance
     @State          private var imageAngle: Angle                = Angle.zero
     @State          private var viewSize: CGSize                 = CGSize.zero
@@ -85,7 +85,7 @@ public struct ImageContentView: View
     @State          private var ignoreSafeArea: Bool
     @State          private var background: Color
 
-    public init(config: Config, imageView: Viewable, settingsView: SettingsViewable, toolBarViews: ToolBarViewables) {
+    public init(config: Config, imageView: ImageViewable, settingsView: any SettingsViewable, toolBarViews: ToolBarViewables) {
         config.imageView = imageView
         self.config = config
         self.imageView = imageView
@@ -194,7 +194,7 @@ extension View {
     }
 }
 
-extension ImageContentView.Viewable {
+extension ImageContentView.ImageViewable {
     public func setupSettings() {}
     public func applySettings() {}
     public func onTap(_ point: CGPoint) {}
