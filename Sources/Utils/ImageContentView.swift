@@ -50,6 +50,7 @@ public struct ImageContentView: View
         func onZoomEnd(_ zoomFactor: CGFloat)
         func onSwipeLeft()
         func onSwipeRight()
+        var  viewPoints: Bool { get }
     }
 
     public protocol SettingsViewable: View {}
@@ -150,6 +151,7 @@ public struct ImageContentView: View
     }
 
     private func ignorePoint(_ normalizedPoint: CGPoint) -> Bool {
+        guard !self.imageView.viewPoints else { return false }
         return (normalizedPoint.x < 0) || (normalizedPoint.x >= self.imageView.size.width)
             || (normalizedPoint.y < 0) || (normalizedPoint.y >= self.imageView.size.height)
     }
@@ -205,4 +207,5 @@ extension ImageContentView.Viewable {
     public func onZoomEnd(_ zoomFactor: CGFloat) {}
     public func onSwipeLeft() {}
     public func onSwipeRight() {}
+    public var  viewPoints: Bool { false }
 }
