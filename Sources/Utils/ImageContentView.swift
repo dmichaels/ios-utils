@@ -5,7 +5,7 @@ import SwiftUI
 //
 public struct ImageContentView: View
 {
-    public class Config: ObservableObject, @unchecked Sendable
+    open class Config: ObservableObject, @unchecked Sendable
     {
         public var hideStatusBar: Bool  = false
         public var hideToolBar: Bool    = false
@@ -29,7 +29,9 @@ public struct ImageContentView: View
         @Published internal private(set) var watchSettings: Int = 0
         @Published internal private(set) var watchSettingsView: Int = 0
 
-        public static let Defaults: Config = Config()
+        open class var Defaults: Config { Config.instance }
+        private static let instance: Config = Config(defaults: true)
+        public init(defaults: Bool) {}
     }
 
     public protocol ImageViewable
